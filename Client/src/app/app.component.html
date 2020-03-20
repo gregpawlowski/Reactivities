@@ -1,0 +1,10 @@
+<h2 class="ui header">
+  <i aria-hidden="true" class="users icon"></i>
+  <div class="content">Reactivities</div>
+</h2>
+
+<div role="list" class="ui list">
+  <div role="listitem" class="item" *ngFor="let value of values">{{value.name}}</div>
+</div>
+
+<router-outlet></router-outlet>
