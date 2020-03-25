@@ -1,25 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { ValueService } from './_services/value.service';
-
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit {
   title = 'Reactivities';
+  editMode = false;
 
-  values: any[];
-
-  constructor(private valueService: ValueService) {}
+  constructor() {}
 
   ngOnInit() {
-    this.valueService.getValues()
-      .subscribe((values: any[]) => {
-        this.values = values;
-      }, err => {
-        console.log(err);
-      });
+  }
+
+  onShowEdit(bool: boolean) {
+    this.editMode = bool;
   }
 
 }

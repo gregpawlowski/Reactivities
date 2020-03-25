@@ -1,0 +1,11 @@
+<div class="ui grid">
+  <div class="ten wide column">
+    <div role="list" class="ui list">
+      <app-activity-list (toggleEdit)="onToggleEdit($event)"></app-activity-list>
+    </div>
+  </div>
+  <div class="six wide column">
+    <app-activity-details *ngIf="!editMode" (toggleEdit)="onToggleEdit($event)"></app-activity-details>
+    <app-activity-form *ngIf="editMode" (toggleEdit)="onToggleEdit($event)"></app-activity-form>
+  </div>
+</div>

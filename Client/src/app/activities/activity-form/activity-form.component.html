@@ -1,0 +1,32 @@
+<div class="ui segment clearing">
+  <form class="ui form" #activityForm="ngForm" (ngSubmit)="handleSubmit(activityForm)">
+  
+    <div class="field">
+      <input type="text" name="title" placeholder="Title" [(ngModel)]="activity.title">
+    </div>
+  
+    <div class="field">
+      <textarea name="description" placeholder="Description" rows="2" [(ngModel)]="activity.description"></textarea>
+    </div>
+  
+    <div class="field">
+      <input type="text" name="category" placeholder="Category" [(ngModel)]="activity.category">
+    </div>
+  
+    <div class="field">
+      <input type="datetime-local" name="date" placeholder="Date" [(ngModel)]="activity.date">
+    </div>
+  
+    <div class="field">
+      <input type="text" name="city" placeholder="City" [(ngModel)]="activity.city">
+    </div>
+  
+    <div class="field">
+      <input type="text" name="venue" placeholder="Venue" [(ngModel)]="activity.venue">
+    </div>
+
+    <button class="ui positive button right floated" type="submit">Submit</button>
+    <button class="ui button right floated" (click)="handleCancel()">Cancel</button>
+    
+  </form>
+</div>

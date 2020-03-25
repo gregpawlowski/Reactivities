@@ -1,10 +1,7 @@
-<h2 class="ui header">
-  <i aria-hidden="true" class="users icon"></i>
-  <div class="content">Reactivities</div>
-</h2>
+<app-navbar (showEdit)="onShowEdit($event)"></app-navbar>
 
-<div role="list" class="ui list">
-  <div role="listitem" class="item" *ngFor="let value of values">{{value.name}}</div>
+<div class="ui container">
+  <app-dashboard [editMode]="editMode" (toggleEdit)="onShowEdit($event)"></app-dashboard>
 </div>
 
 <router-outlet></router-outlet>

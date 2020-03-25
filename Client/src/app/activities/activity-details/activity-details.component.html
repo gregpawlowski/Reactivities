@@ -1,0 +1,14 @@
+<div class="ui card fluid" *ngIf="(activity$ | async) as activity">
+  <div class="image"><img src="../../../assets/categoryImages/{{activity.category}}.jpg" /></div>
+  <div class="content">
+    <div class="header">{{activity.title}}</div>
+    <div class="meta"><span class="date">{{activity.date}}</span></div>
+    <div class="description">{{activity.description}}</div>
+  </div>
+  <div class="extra content">
+    <div class="ui two buttons">
+      <button class="ui button basic blue" (click)="onToggleEdit($event)">Edit</button>
+      <button class="ui button basic grey">Cancel</button>
+    </div>
+  </div>
+</div>
