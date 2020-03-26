@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { ActivityService } from '../activities/shared/services/activity.service';
+import { ActivityService } from '../shared/services/activity.service';
 
 @Component({
   selector: 'app-navbar',

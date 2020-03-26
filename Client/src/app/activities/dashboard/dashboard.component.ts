@@ -1,22 +1,21 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ActivityService, IActivity } from '../shared/services/activity.service';
+import { ActivityService, IActivity } from '../../shared/services/activity.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   @Input() editMode: boolean;
   @Output() toggleEdit = new EventEmitter();
 
-  activities$: Observable<IActivity[]>;
 
-  constructor(private activityService: ActivityService) { }
+  constructor() { }
 
   ngOnInit() {
-    this.activities$ = this.activityService.getActivities();
   }
 
   onToggleEdit(event) {

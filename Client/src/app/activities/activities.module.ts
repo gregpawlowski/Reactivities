@@ -5,6 +5,7 @@ import { ActivityListComponent } from './activity-list/activity-list.component';
 import { ActivityDetailsComponent } from './activity-details/activity-details.component';
 import { ActivityFormComponent } from './activity-form/activity-form.component';
 import { FormsModule } from '@angular/forms';
+import { SharedModule } from '../shared/shared.module';
 
 
 
@@ -12,7 +13,8 @@ import { FormsModule } from '@angular/forms';
   declarations: [DashboardComponent, ActivityListComponent, ActivityDetailsComponent, ActivityFormComponent],
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    SharedModule
   ],
   exports: [DashboardComponent]
 })

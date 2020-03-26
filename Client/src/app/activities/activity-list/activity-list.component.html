@@ -10,7 +10,7 @@
         </div>
         <div class="extra">
           <button class="ui button right floated blue" (click)="setActivity(activity.id)">View</button>
-          <button class="ui button right floated red" (click)="deleteActivity(activity.id)">Delete</button>
+          <button class="ui button right floated red" [ngClass]="{ loading: submitting && targetId === activity.id}" (click)="deleteActivity(activity.id)">Delete</button>
           <label class="ui basic label">{{activity.category}}</label>
         </div>
       </div>

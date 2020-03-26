@@ -1,21 +1,22 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { IActivity, ActivityService } from '../shared/services/activity.service';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { IActivity, ActivityService } from '../../shared/services/activity.service';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-activity-list',
   templateUrl: './activity-list.component.html',
-  styleUrls: ['./activity-list.component.scss']
+  styleUrls: ['./activity-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityListComponent implements OnInit {
-  activities$: Observable<IActivity[]>;
+  activities$ = this.activityService.activities$;
+  submitting = false;
+  targetId = '';
   @Output() toggleEdit = new EventEmitter<boolean>();
 
   constructor(private activityService: ActivityService) { }
 
   ngOnInit() {
-    this.activities$ = this.activityService.activities$;
-    this.activityService.getActivities().subscribe();
   }
 
   setActivity(id: string) {
@@ -24,7 +25,13 @@ export class ActivityListComponent implements OnInit {
   }
 
   deleteActivity(id: string) {
-    this.activityService.deleteActivity(id);
+    this.submitting = true;
+    this.targetId = id;
+    this.activityService.deleteActivity(id)
+      .subscribe(() => {
+        this.submitting = false;
+        this.targetId = '';
+      });
   }
 
 }

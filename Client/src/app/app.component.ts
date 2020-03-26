@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { ActivityService, IActivity } from './shared/services/activity.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -8,10 +9,16 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 export class AppComponent implements OnInit {
   title = 'Reactivities';
   editMode = false;
+  loading = true;
+  activities: IActivity[];
 
-  constructor() {}
+  constructor(private activityService: ActivityService, private cd: ChangeDetectorRef) {}
 
   ngOnInit() {
+    this.activityService.getActivities()
+      .subscribe(() => {
+        this.loading = false;
+      });
   }
 
   onShowEdit(bool: boolean) {

@@ -25,8 +25,8 @@
       <input type="text" name="venue" placeholder="Venue" [(ngModel)]="activity.venue">
     </div>
 
-    <button class="ui positive button right floated" type="submit">Submit</button>
-    <button class="ui button right floated" (click)="handleCancel()">Cancel</button>
+    <button class="ui positive button right floated" [ngClass]="{loading: submitting}" type="submit">Submit</button>
+    <button class="ui button right floated" type="button" (click)="handleCancel()">Cancel</button>
     
   </form>
 </div>

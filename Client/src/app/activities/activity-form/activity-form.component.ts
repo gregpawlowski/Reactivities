@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { ActivityService, IActivity } from '../shared/services/activity.service';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { v4 as uuid } from 'uuid';
@@ -7,10 +7,12 @@ import { v4 as uuid } from 'uuid';
 @Component({
   selector: 'app-activity-form',
   templateUrl: './activity-form.component.html',
-  styleUrls: ['./activity-form.component.scss']
+  styleUrls: ['./activity-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityFormComponent implements OnInit, OnDestroy {
   @Output() toggleEdit = new EventEmitter<boolean>();
+  submitting = false;
 
   activity: IActivity = {
     id: '',
@@ -54,15 +56,21 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   }
 
   handleSubmit(form: NgForm) {
+    this.submitting = true;
+
     if (this.activity.id.length === 0) {
       const id = uuid();
-      this.activityService.createActivity({...this.activity, id});
-      this.toggleEdit.emit(false);
-      this.activityService.setSelectedActivity(id);
+      this.activityService.createActivity({...this.activity, id})
+        .subscribe(() => {
+          this.submitting = false;
+          this.toggleEdit.emit(false);
+        });
     } else {
-      this.activityService.editActivity(this.activity);
-      this.toggleEdit.emit(false);
-      this.activityService.setSelectedActivity(this.activity.id);
+      this.activityService.updateActivity(this.activity)
+        .subscribe(() => {
+          this.submitting = false;
+          this.toggleEdit.emit(false);
+        });
     }
   }
 

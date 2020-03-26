@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { ActivityService, IActivity } from '../shared/services/activity.service';
+import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { Observable, Subscription } from 'rxjs';
 
 @Component({
@@ -20,6 +20,10 @@ export class ActivityDetailsComponent implements OnInit {
 
   onToggleEdit() {
     this.toggleEdit.emit(true);
+  }
+
+  onCancel() {
+    this.activityService.setSelectedActivity();
   }
 
 }
