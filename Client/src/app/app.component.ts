@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivityService, IActivity } from './shared/services/activity.service';
+import { Store } from '@store';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -8,21 +9,11 @@ import { ActivityService, IActivity } from './shared/services/activity.service';
 })
 export class AppComponent implements OnInit {
   title = 'Reactivities';
-  editMode = false;
-  loading = true;
-  activities: IActivity[];
+  loading$ = this.store.select<boolean>('loading');
 
-  constructor(private activityService: ActivityService, private cd: ChangeDetectorRef) {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
-    this.activityService.getActivities()
-      .subscribe(() => {
-        this.loading = false;
-      });
-  }
-
-  onShowEdit(bool: boolean) {
-    this.editMode = bool;
   }
 
 }

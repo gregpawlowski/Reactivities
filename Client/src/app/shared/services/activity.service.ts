@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
-import { tap, distinctUntilChanged, map, delay } from 'rxjs/operators';
+import { tap, distinctUntilChanged, map, delay, filter } from 'rxjs/operators';
+import { Store } from '@store';
 
 const apiBase = environment.apiBase;
 
@@ -20,26 +21,32 @@ export interface IActivity {
   providedIn: 'root'
 })
 export class ActivityService {
-  private activitiesSubject = new BehaviorSubject<IActivity[]>(undefined);
-  private selectedActivitySubject = new BehaviorSubject<IActivity>(undefined);
+  // private activitiesSubject = new BehaviorSubject<IActivity[]>(undefined);
+  // private selectedActivitySubject = new BehaviorSubject<IActivity>(undefined);
 
-  activities$ = this.activitiesSubject.asObservable()
-    .pipe(distinctUntilChanged());
+  // activities$ = this.activitiesSubject.asObservable()
+  //   .pipe(
+  //     distinctUntilChanged(),
+  //     filter<IActivity[]>(Boolean),
+  //     map(activities => activities.sort((a, b) => Date.parse(a.date) - Date.parse(b.date)))
+  //     );
 
-  selectedActivity$ = this.selectedActivitySubject.asObservable()
-    .pipe(distinctUntilChanged());
+  // selectedActivity$ = this.selectedActivitySubject.asObservable()
+  //   .pipe(distinctUntilChanged());
 
-  get activities() {
-    return this.activitiesSubject.value;
-  }
+  // get activities() {
+  //   return this.activitiesSubject.value;
+  // }
 
-  get selectedActivity() {
-    return this.selectedActivitySubject.value;
-  }
+  // get selectedActivity() {
+  //   return this.selectedActivitySubject.value;
+  // }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private store: Store) { }
 
   getActivities() {
+    this.store.set('loading', true);
+
     return this.http.get<IActivity[]>(apiBase + 'activities')
       .pipe(
         delay(1000),
@@ -47,7 +54,10 @@ export class ActivityService {
           a.date = a.date.split('.')[0];
           return a;
         })),
-        tap(activities => this.activitiesSubject.next(activities))
+        tap(activities => {
+          this.store.set('activities', activities);
+          this.store.set('loading', false);
+        })
         );
   }
 
@@ -60,10 +70,10 @@ export class ActivityService {
 
   setSelectedActivity(id?: string) {
     if (id) {
-      const foundActivity = this.activities.find(activity => activity.id === id);
-      this.selectedActivitySubject.next({...foundActivity});
+      const foundActivity = this.store.value.activities.find(activity => activity.id === id);
+      this.store.set('selectedActivity', foundActivity);
     } else {
-      this.selectedActivitySubject.next(undefined);
+      this.store.set('selectedActivity', undefined);
     }
   }
 
@@ -72,8 +82,8 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
-          this.activitiesSubject.next([...this.activities, { ...activity }]);
-          this.selectedActivitySubject.next(activity);
+          this.store.set('activities', [...this.store.value.activities, { ...activity }]);
+          this.store.set('selectedActivity', activity);
         })
       );
   }
@@ -83,8 +93,8 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
-          this.activitiesSubject.next([...this.activities.filter(a => a.id !== activity.id), {...activity}]);
-          this.selectedActivitySubject.next(activity);
+          this.store.set('activities', [...this.store.value.activities.filter(a => a.id !== activity.id), {...activity}]);
+          this.store.set('selectedActivity', activity);
         })
       );
   }
@@ -94,9 +104,10 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
-          this.activitiesSubject.next([...this.activities.filter(a => a.id !== id)]);
-          if (this.selectedActivity.id === id) {
-            this.selectedActivitySubject.next(undefined);
+          this.store.set('activities', ([...this.store.value.activities.filter(a => a.id !== id)]));
+
+          if (this.store.value.selectedActivity && (this.store.value.selectedActivity.id === id)) {
+            this.store.set('selectedActivity', undefined);
           }
         })
       );

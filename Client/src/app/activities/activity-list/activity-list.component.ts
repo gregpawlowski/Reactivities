@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { IActivity, ActivityService } from '../../shared/services/activity.service';
 import { Observable } from 'rxjs';
+import { Store } from '@store';
 
 @Component({
   selector: 'app-activity-list',
@@ -9,19 +10,20 @@ import { Observable } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityListComponent implements OnInit {
-  activities$ = this.activityService.activities$;
+  activities$ = this.store.selectOrderedActivities();
   submitting = false;
   targetId = '';
-  @Output() toggleEdit = new EventEmitter<boolean>();
 
-  constructor(private activityService: ActivityService) { }
+  constructor(private activityService: ActivityService, private store: Store) { }
 
   ngOnInit() {
+    this.activityService.getActivities()
+      .subscribe();
   }
 
   setActivity(id: string) {
     this.activityService.setSelectedActivity(id);
-    this.toggleEdit.emit(false);
+    this.store.set('editMode', false);
   }
 
   deleteActivity(id: string) {

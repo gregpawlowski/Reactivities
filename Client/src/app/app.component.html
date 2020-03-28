@@ -1,8 +1,8 @@
-<app-loading *ngIf="loading === true"></app-loading>
-<app-navbar (showEdit)="onShowEdit($event)"></app-navbar>
+<app-loading *ngIf="loading$ | async"></app-loading>
+<app-navbar></app-navbar>
 
 <div class="ui container">
-  <app-dashboard [editMode]="editMode" (toggleEdit)="onShowEdit($event)"></app-dashboard>
+  <app-dashboard></app-dashboard>
 </div>
 
 <router-outlet></router-outlet>

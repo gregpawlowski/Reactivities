@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { v4 as uuid } from 'uuid';
+import { Store } from '@store';
 
 @Component({
   selector: 'app-activity-form',
@@ -11,7 +12,6 @@ import { v4 as uuid } from 'uuid';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityFormComponent implements OnInit, OnDestroy {
-  @Output() toggleEdit = new EventEmitter<boolean>();
   submitting = false;
 
   activity: IActivity = {
@@ -25,14 +25,14 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   };
   subscription: Subscription;
 
-  constructor(private activityService: ActivityService) { }
+  constructor(private activityService: ActivityService, private store: Store, private cd: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.initializeForm();
   }
 
   initializeForm() {
-    this.subscription = this.activityService.selectedActivity$.subscribe(
+    this.subscription = this.store.select<IActivity>('selectedActivity').subscribe(
       activity => {
         if (activity) {
               this.activity = {...activity};
@@ -47,6 +47,7 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
                 venue: '',
               };
             }
+        this.cd.markForCheck();
       }
     );
   }
@@ -63,19 +64,19 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       this.activityService.createActivity({...this.activity, id})
         .subscribe(() => {
           this.submitting = false;
-          this.toggleEdit.emit(false);
+          this.store.set('editMode', false);
         });
     } else {
       this.activityService.updateActivity(this.activity)
         .subscribe(() => {
           this.submitting = false;
-          this.toggleEdit.emit(false);
+          this.store.set('editMode', false);
         });
     }
   }
 
   handleCancel() {
-    this.toggleEdit.emit(false);
+    this.store.set('editMode', false);
   }
 
 }

@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ActivityService } from '../shared/services/activity.service';
+import { Store } from '@store';
 
 @Component({
   selector: 'app-navbar',
@@ -7,16 +8,15 @@ import { ActivityService } from '../shared/services/activity.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-  @Output() showEdit = new EventEmitter<boolean>();
 
-  constructor(private activityService: ActivityService) { }
+  constructor(private store: Store) { }
 
   ngOnInit() {
   }
 
   onCreateClick() {
-    this.activityService.setSelectedActivity(undefined);
-    this.showEdit.emit(true);
+    this.store.set('selectedActivity', undefined);
+    this.store.set('editMode', true);
   }
 
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { Observable, Subscription } from 'rxjs';
+import { Store } from '@store';
 
 @Component({
   selector: 'app-activity-details',
@@ -9,17 +10,17 @@ import { Observable, Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityDetailsComponent implements OnInit {
-  activity$: Observable<IActivity>;
+  activity$ = this.store.select<IActivity>('selectedActivity');
+
   @Output() toggleEdit = new EventEmitter<boolean>();
 
-  constructor(private activityService: ActivityService, private cd: ChangeDetectorRef) { }
+  constructor(private activityService: ActivityService, private cd: ChangeDetectorRef, private store: Store) { }
 
   ngOnInit() {
-    this.activity$ = this.activityService.selectedActivity$;
   }
 
   onToggleEdit() {
-    this.toggleEdit.emit(true);
+    this.store.set('editMode', true);
   }
 
   onCancel() {
