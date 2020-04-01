@@ -8,15 +8,15 @@ import { Injectable } from '@angular/core';
 export interface State {
   activities: IActivity[];
   loading: boolean;
-  editMode: boolean;
-  selectedActivity: IActivity;
+  loaderContent: string;
+  activity: IActivity;
 }
 
 const state: State = {
   activities: undefined,
-  loading: true,
-  editMode: false,
-  selectedActivity: undefined
+  loading: false,
+  activity: undefined,
+  loaderContent: undefined
 };
 
 @Injectable({

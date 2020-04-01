@@ -14,9 +14,4 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
   }
 
-  onCreateClick() {
-    this.store.set('selectedActivity', undefined);
-    this.store.set('editMode', true);
-  }
-
 }

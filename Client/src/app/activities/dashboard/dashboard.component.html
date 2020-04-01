@@ -1,11 +1,10 @@
-<div class="ui grid">
+<div class="ui grid" #activity>
   <div class="ten wide column">
     <div role="list" class="ui list">
       <app-activity-list></app-activity-list>
     </div>
   </div>
   <div class="six wide column">
-    <app-activity-details *ngIf="!(editMode$ | async)"></app-activity-details>
-    <app-activity-form *ngIf="editMode$ | async"></app-activity-form>
+    <h2>Activity Filters</h2>
   </div>
 </div>

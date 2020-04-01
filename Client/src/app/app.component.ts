@@ -9,9 +9,8 @@ import { Store } from '@store';
 })
 export class AppComponent implements OnInit {
   title = 'Reactivities';
-  loading$ = this.store.select<boolean>('loading');
 
-  constructor(private store: Store) {}
+  constructor(private store: Store, private activityService: ActivityService) {}
 
   ngOnInit() {
   }

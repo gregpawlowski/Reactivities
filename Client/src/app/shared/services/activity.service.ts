@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { BehaviorSubject } from 'rxjs';
-import { tap, distinctUntilChanged, map, delay, filter } from 'rxjs/operators';
+import { BehaviorSubject, of } from 'rxjs';
+import { tap, distinctUntilChanged, map, delay, filter, catchError, shareReplay } from 'rxjs/operators';
 import { Store } from '@store';
+import { LoadingService } from './loading.service';
 
 const apiBase = environment.apiBase;
 
@@ -21,31 +22,11 @@ export interface IActivity {
   providedIn: 'root'
 })
 export class ActivityService {
-  // private activitiesSubject = new BehaviorSubject<IActivity[]>(undefined);
-  // private selectedActivitySubject = new BehaviorSubject<IActivity>(undefined);
 
-  // activities$ = this.activitiesSubject.asObservable()
-  //   .pipe(
-  //     distinctUntilChanged(),
-  //     filter<IActivity[]>(Boolean),
-  //     map(activities => activities.sort((a, b) => Date.parse(a.date) - Date.parse(b.date)))
-  //     );
-
-  // selectedActivity$ = this.selectedActivitySubject.asObservable()
-  //   .pipe(distinctUntilChanged());
-
-  // get activities() {
-  //   return this.activitiesSubject.value;
-  // }
-
-  // get selectedActivity() {
-  //   return this.selectedActivitySubject.value;
-  // }
-
-  constructor(private http: HttpClient, private store: Store) { }
+  constructor(private http: HttpClient, private store: Store, private loadingService: LoadingService) { }
 
   getActivities() {
-    this.store.set('loading', true);
+    this.loadingService.startLoading('Loading Activities');
 
     return this.http.get<IActivity[]>(apiBase + 'activities')
       .pipe(
@@ -56,25 +37,46 @@ export class ActivityService {
         })),
         tap(activities => {
           this.store.set('activities', activities);
-          this.store.set('loading', false);
+          this.loadingService.stopLoading();
         })
         );
   }
 
-  getActivityDetails(id) {
-    return this.http.get<IActivity>(apiBase + 'id')
-      .pipe(
-        delay(100)
-      );
+  getActivityDetails(id: string) {
+    if (this.store.value.activity && this.store.value.activity.id === id) {
+      return of(this.store.value.activity);
+    }
+
+    const activityFromStore = this.store.value.activities && this.store.value.activities.find(a => a.id === id);
+
+    if (activityFromStore) {
+      return of(activityFromStore);
+    } else {
+      this.loadingService.startLoading('Loading Activity');
+      return this.http.get<IActivity>(apiBase + 'activities/' + id)
+        .pipe(
+          delay(1000),
+          map(a => {
+            if (a) {
+              a.date = a.date.split('.')[0];
+              return a;
+            }
+          }),
+          tap(activity => {
+            this.store.set('activity', activity);
+            this.loadingService.stopLoading();
+          }),
+          catchError(() => {
+            console.log('There was an error loading the activity');
+            this.loadingService.stopLoading();
+            return of(undefined);
+          })
+        );
+    }
   }
 
-  setSelectedActivity(id?: string) {
-    if (id) {
-      const foundActivity = this.store.value.activities.find(activity => activity.id === id);
-      this.store.set('selectedActivity', foundActivity);
-    } else {
-      this.store.set('selectedActivity', undefined);
-    }
+  setActivity(activity?: IActivity) {
+    this.store.set('activity', activity ? activity : undefined);
   }
 
   createActivity(activity: IActivity) {
@@ -83,7 +85,7 @@ export class ActivityService {
         delay(1000),
         tap(() => {
           this.store.set('activities', [...this.store.value.activities, { ...activity }]);
-          this.store.set('selectedActivity', activity);
+          this.store.set('activity', activity);
         })
       );
   }
@@ -94,7 +96,7 @@ export class ActivityService {
         delay(1000),
         tap(() => {
           this.store.set('activities', [...this.store.value.activities.filter(a => a.id !== activity.id), {...activity}]);
-          this.store.set('selectedActivity', activity);
+          this.store.set('activity', activity);
         })
       );
   }
@@ -105,10 +107,6 @@ export class ActivityService {
         delay(1000),
         tap(() => {
           this.store.set('activities', ([...this.store.value.activities.filter(a => a.id !== id)]));
-
-          if (this.store.value.selectedActivity && (this.store.value.selectedActivity.id === id)) {
-            this.store.set('selectedActivity', undefined);
-          }
         })
       );
   }

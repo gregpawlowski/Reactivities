@@ -6,6 +6,7 @@ import { ActivityDetailsComponent } from './activity-details/activity-details.co
 import { ActivityFormComponent } from './activity-form/activity-form.component';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
+import { ActivitiesRoutingModule } from './activities-routing.module';
 
 
 
@@ -14,8 +15,9 @@ import { SharedModule } from '../shared/shared.module';
   imports: [
     CommonModule,
     FormsModule,
-    SharedModule
+    SharedModule,
+    ActivitiesRoutingModule
   ],
-  exports: [DashboardComponent]
+  exports: []
 })
 export class ActivitiesModule { }

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRe
 import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { Observable, Subscription } from 'rxjs';
 import { Store } from '@store';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-activity-details',
@@ -10,21 +11,21 @@ import { Store } from '@store';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityDetailsComponent implements OnInit {
-  activity$ = this.store.select<IActivity>('selectedActivity');
+  activity$ = this.store.select<IActivity>('activity');
 
-  @Output() toggleEdit = new EventEmitter<boolean>();
-
-  constructor(private activityService: ActivityService, private cd: ChangeDetectorRef, private store: Store) { }
+  constructor(private route: ActivatedRoute, private router: Router, private activityService: ActivityService, private store: Store) { }
 
   ngOnInit() {
-  }
-
-  onToggleEdit() {
-    this.store.set('editMode', true);
+    this.activityService.getActivityDetails(this.route.snapshot.params.id)
+      .subscribe();
   }
 
   onCancel() {
-    this.activityService.setSelectedActivity();
+    this.router.navigate(['/', 'activities']);
+  }
+
+  onEdit(activity: IActivity) {
+    this.router.navigate(['/', 'activities', activity.id, 'edit']);
   }
 
 }

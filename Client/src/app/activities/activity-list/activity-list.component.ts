@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy
 import { IActivity, ActivityService } from '../../shared/services/activity.service';
 import { Observable } from 'rxjs';
 import { Store } from '@store';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-activity-list',
@@ -14,16 +15,14 @@ export class ActivityListComponent implements OnInit {
   submitting = false;
   targetId = '';
 
-  constructor(private activityService: ActivityService, private store: Store) { }
+  constructor(private activityService: ActivityService, private store: Store, private router: Router) { }
 
   ngOnInit() {
-    this.activityService.getActivities()
-      .subscribe();
   }
 
-  setActivity(id: string) {
-    this.activityService.setSelectedActivity(id);
-    this.store.set('editMode', false);
+  onViewClick(activity: IActivity) {
+    this.activityService.setActivity(activity);
+    this.router.navigate(['activities', activity.id]);
   }
 
   deleteActivity(id: string) {

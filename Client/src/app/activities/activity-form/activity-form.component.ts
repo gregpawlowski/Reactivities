@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivityService, IActivity } from '../../shared/services/activity.service';
 import { NgForm } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 import { Store } from '@store';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-activity-form',
@@ -11,7 +11,7 @@ import { Store } from '@store';
   styleUrls: ['./activity-form.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityFormComponent implements OnInit, OnDestroy {
+export class ActivityFormComponent implements OnInit {
   submitting = false;
 
   activity: IActivity = {
@@ -23,37 +23,24 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     city: '',
     venue: '',
   };
-  subscription: Subscription;
 
-  constructor(private activityService: ActivityService, private store: Store, private cd: ChangeDetectorRef) { }
+  constructor(
+    private activityService: ActivityService,
+    private store: Store,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cd: ChangeDetectorRef
+    ) { }
 
   ngOnInit() {
-    this.initializeForm();
-  }
-
-  initializeForm() {
-    this.subscription = this.store.select<IActivity>('selectedActivity').subscribe(
-      activity => {
-        if (activity) {
-              this.activity = {...activity};
-            } else {
-              this.activity = {
-                id: '',
-                title: '',
-                description: '',
-                date: '',
-                category: '',
-                city: '',
-                venue: '',
-              };
-            }
-        this.cd.markForCheck();
-      }
-    );
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
+    // ID exists so we want to populate the activity information
+    if (this.route.snapshot.params.id) {
+      this.activityService.getActivityDetails(this.route.snapshot.params.id)
+        .subscribe(() => {
+          this.activity = this.store.value.activity;
+          this.cd.markForCheck();
+        });
+    }
   }
 
   handleSubmit(form: NgForm) {
@@ -64,19 +51,22 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       this.activityService.createActivity({...this.activity, id})
         .subscribe(() => {
           this.submitting = false;
-          this.store.set('editMode', false);
         });
     } else {
       this.activityService.updateActivity(this.activity)
         .subscribe(() => {
           this.submitting = false;
-          this.store.set('editMode', false);
         });
     }
   }
 
-  handleCancel() {
-    this.store.set('editMode', false);
+  onCancel() {
+    const id = this.route.snapshot.params.id;
+    if (id) {
+      this.router.navigate(['activities', id]);
+    } else {
+      this.router.navigate(['activities']);
+    }
   }
 
 }

@@ -10,11 +10,12 @@ import { Store } from '@store';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
-  editMode$ = this.store.select<boolean>('editMode');
 
-  constructor(private store: Store) { }
+  constructor(private activityService: ActivityService) { }
 
   ngOnInit() {
+    this.activityService.getActivities()
+      .subscribe();
   }
 
 }
