@@ -51,11 +51,13 @@ export class ActivityFormComponent implements OnInit {
       this.activityService.createActivity({...this.activity, id})
         .subscribe(() => {
           this.submitting = false;
+          this.router.navigate(['/activities', id]);
         });
     } else {
       this.activityService.updateActivity(this.activity)
         .subscribe(() => {
           this.submitting = false;
+          this.router.navigate(['/activities', this.activity.id]);
         });
     }
   }

@@ -84,7 +84,9 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
-          this.store.set('activities', [...this.store.value.activities, { ...activity }]);
+          if (this.store.value.activities) {
+            this.store.set('activities', [...this.store.value.activities, activity]);
+          }
           this.store.set('activity', activity);
         })
       );
@@ -95,7 +97,9 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
-          this.store.set('activities', [...this.store.value.activities.filter(a => a.id !== activity.id), {...activity}]);
+          if (this.store.value.activities) {
+            this.store.set('activities', [...this.store.value.activities.filter(a => a.id !== activity.id), activity]);
+          }
           this.store.set('activity', activity);
         })
       );
