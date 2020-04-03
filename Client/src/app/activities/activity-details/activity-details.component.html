@@ -1,14 +1,10 @@
-<div class="ui card fluid" *ngIf="(activity$ | async) as activity">
-  <div class="image"><img src="../../../assets/categoryImages/{{activity.category}}.jpg" /></div>
-  <div class="content">
-    <div class="header">{{activity.title}}</div>
-    <div class="meta"><span class="date">{{activity.date}}</span></div>
-    <div class="description">{{activity.description}}</div>
+<div class="ui grid" *ngIf="(activity$ | async) as activity">
+  <div class="column ten wide">
+      <app-activity-detailed-header [activity]="activity" style="display: block; padding-bottom: 10px;"></app-activity-detailed-header>
+      <app-activity-detailed-info [activity]="activity" style="display: block; padding-bottom: 10px;"></app-activity-detailed-info>
+      <app-activity-detailed-chat></app-activity-detailed-chat>
   </div>
-  <div class="extra content">
-    <div class="ui two buttons">
-      <button class="ui button basic blue" (click)="onEdit(activity)">Edit</button>
-      <button class="ui button basic grey" (click)="onCancel()">Cancel</button>
-    </div>
+  <div class="column six wide">
+    <app-activity-detailed-sidebar></app-activity-detailed-sidebar>
   </div>
 </div>

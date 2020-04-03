@@ -1,19 +1,9 @@
-<div class="ui segment clearing">
-  <div class="ui items divided">
-    <div class="item" *ngFor="let activity of activities$ | async">
-      <div class="content">
-        <a class="header">{{activity.title}}</a>
-        <div class="meta">{{activity.date}}</div>
-        <div class="description">
-          <div>{{activity.description}}</div>
-          <div>{{activity.city}}, {{activity.venue}}</div>
-        </div>
-        <div class="extra">
-          <button class="ui button right floated blue" (click)="onViewClick(activity)">View</button>
-          <button class="ui button right floated red" [ngClass]="{ loading: submitting && targetId === activity.id}" (click)="deleteActivity(activity.id)">Delete</button>
-          <label class="ui basic label">{{activity.category}}</label>
-        </div>
-      </div>
-    </div>
+<ng-container *ngFor="let groupActivity of groupedActivities$ | async">
+  <label  class="ui label large blue">
+    {{groupActivity[0]}}
+  </label>
+  <div class="ui items">
+    <app-activity-list-item *ngFor="let activity of groupActivity[1]"  [activity]="activity"></app-activity-list-item>
   </div>
-</div>
+</ng-container>
+

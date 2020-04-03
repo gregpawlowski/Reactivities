@@ -1,0 +1,26 @@
+<div class="ui segments">
+  <div class="ui segment">
+    <div class="ui items">
+      <div class="item">
+        <div class="ui tiny image circular"><img src="../../../assets/user.png" /></div>
+        <div class="content">
+          <a class="header">{{activity.title}}</a>
+          <div class="description">
+            Hosted by Bob
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui segment">
+    <i aria-hidden="true" class="clock icon"></i>{{activity.date}}
+    <i aria-hidden="true" class="marker icon"></i>{{activity.venue}}, {{activity.city}}
+  </div>
+  <div class="ui segment secondary">
+    Attendees will go here
+  </div>
+  <div class="ui segment clearing">
+    <span>{{activity.description}}</span>
+    <button class="ui button right floated blue" (click)="onViewClick(activity)">View</button>
+  </div>
+</div>

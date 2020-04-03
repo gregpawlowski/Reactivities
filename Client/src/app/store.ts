@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, pluck, filter, map } from 'rxjs/operators';
+import { distinctUntilChanged, pluck, filter, map, shareReplay } from 'rxjs/operators';
 
 import { IActivity } from './shared/services/activity.service';
 import { Injectable } from '@angular/core';
@@ -46,11 +46,23 @@ export class Store {
     });
   }
 
-  selectOrderedActivities() {
+  activitiesByDate$() {
     return this.select<IActivity[]>('activities')
       .pipe(
+        shareReplay(1),
         filter<IActivity[]>(Boolean),
-        map(activities => activities.sort((a, b) => Date.parse(a.date) - Date.parse(b.date)))
+        map(a => this.groupActivitiesByDate(a))
       );
+  }
+
+  groupActivitiesByDate(activities: IActivity[]) {
+    const sortedActivities = activities.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+
+    return Object.entries(sortedActivities.reduce((acc, activity) => {
+      const date = activity.date.split('T')[0];
+
+      acc[date] = acc[date] ? [...acc[date], activity] : [activity];
+      return acc;
+    }, {} as {[key: string]: IActivity[]}));
   }
 }
