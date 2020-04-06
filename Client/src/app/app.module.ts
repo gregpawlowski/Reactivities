@@ -10,6 +10,9 @@ import { SharedModule } from './shared/shared.module';
 import { HomeComponent } from './home/home.component';
 import { HomeLayoutComponent } from './home-layout/home-layout.component';
 import { LoginLayoutComponent } from './login-layout/login-layout.component';
+import { ErrorInterceptorProvider } from './shared/services/error.interceptor';
+import { ToastrModule } from 'ngx-toastr';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -24,9 +27,13 @@ import { LoginLayoutComponent } from './login-layout/login-layout.component';
     AppRoutingModule,
     HttpClientModule,
     ActivitiesModule,
-    SharedModule
+    SharedModule,
+    BrowserAnimationsModule,
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right'
+    })
   ],
-  providers: [],
+  providers: [ ErrorInterceptorProvider ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

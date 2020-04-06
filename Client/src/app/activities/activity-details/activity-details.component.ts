@@ -17,7 +17,9 @@ export class ActivityDetailsComponent implements OnInit {
 
   ngOnInit() {
     this.activityService.getActivityDetails(this.route.snapshot.params.id)
-      .subscribe();
+      .subscribe(() => {}, (err) => {
+        this.store.set('loading', false);
+      });
   }
 
   onCancel() {

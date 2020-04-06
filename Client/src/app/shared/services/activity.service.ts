@@ -65,11 +65,6 @@ export class ActivityService {
           tap(activity => {
             this.store.set('activity', activity);
             this.loadingService.stopLoading();
-          }),
-          catchError(() => {
-            console.log('There was an error loading the activity');
-            this.loadingService.stopLoading();
-            return of(undefined);
           })
         );
     }

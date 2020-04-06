@@ -12,11 +12,12 @@ import { ActivityDetailedHeaderComponent } from './activity-detailed-header/acti
 import { ActivityDetailedInfoComponent } from './activity-detailed-info/activity-detailed-info.component';
 import { ActivityDetailedChatComponent } from './activity-detailed-chat/activity-detailed-chat.component';
 import { ActivityDetailedSidebarComponent } from './activity-detailed-sidebar/activity-detailed-sidebar.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 
 
 @NgModule({
-  declarations: [DashboardComponent, ActivityListComponent, ActivityDetailsComponent, ActivityFormComponent, ActivityListItemComponent, ActivityDetailedHeaderComponent, ActivityDetailedInfoComponent, ActivityDetailedChatComponent, ActivityDetailedSidebarComponent],
+  declarations: [DashboardComponent, ActivityListComponent, ActivityDetailsComponent, ActivityFormComponent, ActivityListItemComponent, ActivityDetailedHeaderComponent, ActivityDetailedInfoComponent, ActivityDetailedChatComponent, ActivityDetailedSidebarComponent, NotFoundComponent],
   imports: [
     CommonModule,
     FormsModule,

@@ -1,4 +1,4 @@
-<div class="ui grid" *ngIf="(activity$ | async) as activity">
+<div class="ui grid" *ngIf="(activity$ | async) as activity; else notFound">
   <div class="column ten wide">
       <app-activity-detailed-header [activity]="activity" style="display: block; padding-bottom: 10px;"></app-activity-detailed-header>
       <app-activity-detailed-info [activity]="activity" style="display: block; padding-bottom: 10px;"></app-activity-detailed-info>
@@ -8,3 +8,7 @@
     <app-activity-detailed-sidebar></app-activity-detailed-sidebar>
   </div>
 </div>
+
+<ng-template #notFound>
+  <h1>Activity not found</h1>
+</ng-template>
