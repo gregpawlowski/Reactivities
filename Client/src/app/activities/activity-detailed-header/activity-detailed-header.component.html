@@ -6,7 +6,7 @@
         <div class="item">
           <div class="content">
             <div class="ui huge header" style="color: white">{{activity.title}}</div>
-            <p>{{activity.date}}</p>
+            <p>{{activity.date | date:'EEEE MMMM d'}}</p>
             <p>Hosted by <strong>Bob</strong></p>
           </div>
         </div>
@@ -17,6 +17,6 @@
   <div class="ui segment clearing bottom attached">
     <button class="ui button teal">Join Activity</button>
     <button class="ui button">Cancel attendance</button>
-    <button class="ui button right floated orange">Manage Event</button>
+    <a class="ui button right floated orange" routerLink="edit">Manage Event</a>
   </div>
 </div>

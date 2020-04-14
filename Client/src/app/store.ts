@@ -56,10 +56,11 @@ export class Store {
   }
 
   groupActivitiesByDate(activities: IActivity[]) {
-    const sortedActivities = activities.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    const sortedActivities = activities.sort((a, b) => a.date.getTime() - b.date.getTime());
 
     return Object.entries(sortedActivities.reduce((acc, activity) => {
-      const date = activity.date.split('T')[0];
+
+      const date = activity.date.toLocaleString().split(',')[0];
 
       acc[date] = acc[date] ? [...acc[date], activity] : [activity];
       return acc;

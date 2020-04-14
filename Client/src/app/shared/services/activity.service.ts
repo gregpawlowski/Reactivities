@@ -13,7 +13,7 @@ export interface IActivity {
   title: string;
   description: string;
   category: string;
-  date: string;
+  date: Date;
   city: string;
   venue: string;
 }
@@ -32,7 +32,7 @@ export class ActivityService {
       .pipe(
         delay(1000),
         map(res => res.map(a => {
-          a.date = a.date.split('.')[0];
+          a.date = new Date(a.date);
           return a;
         })),
         tap(activities => {
@@ -57,8 +57,10 @@ export class ActivityService {
         .pipe(
           delay(1000),
           map(a => {
+            console.log('activity service:', a.date);
             if (a) {
-              a.date = a.date.split('.')[0];
+              // a.date = a.date.split('.')[0];
+              a.date = new Date(a.date);
               return a;
             }
           }),

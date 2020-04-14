@@ -13,7 +13,7 @@
     </div>
   </div>
   <div class="ui segment">
-    <i aria-hidden="true" class="clock icon"></i>{{activity.date}}
+    <i aria-hidden="true" class="clock icon"></i>{{activity.date | date:'h:mm a'}}
     <i aria-hidden="true" class="marker icon"></i>{{activity.venue}}, {{activity.city}}
   </div>
   <div class="ui segment secondary">

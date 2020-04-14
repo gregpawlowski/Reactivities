@@ -3,31 +3,84 @@
     <div class="ui segment clearing">
       <form class="ui form" #activityForm="ngForm" (ngSubmit)="handleSubmit(activityForm)">
       
-        <div class="field">
-          <input type="text" name="title" placeholder="Title" [(ngModel)]="activity.title">
+        <div class="field" [ngClass]="{error: title.invalid && (title.touched || title.dirty)}">
+          <input type="text" name="title" placeholder="Title" [(ngModel)]="activityFormValues.title" required #title="ngModel">
+          <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="title.invalid && (title.dirty || title.touched) && title.errors.required">
+            Title is required
+          </div>
         </div>
       
-        <div class="field">
-          <textarea name="description" placeholder="Description" rows="2" [(ngModel)]="activity.description"></textarea>
+        <div class="field" [ngClass]="{error: description.invalid && (description.touched || description.dirty)}">
+          <textarea name="description" placeholder="Description" rows="2" [(ngModel)]="activityFormValues.description" #description="ngModel" required minlength="10"></textarea>
+          <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="description.invalid && (description.dirty || description.touched) && description.errors.required">
+            Description is required
+          </div>         
+           <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="description.invalid && (description.dirty || description.touched) && description.errors.minlength">
+            Description should be at least 10 characters
+          </div>
         </div>
       
-        <div class="field">
-          <input type="text" name="category" placeholder="Category" [(ngModel)]="activity.category">
+        <div class="field" [ngClass]="{error: category.invalid && (category.touched || category.dirty)}">
+          <sui-select class="selection"
+          [(ngModel)]="activityFormValues.category"
+          [options]="categories"
+          name="category"
+          hasLabels="true"
+          labelField="label"
+          valueField="value"
+          #select
+          #category="ngModel"
+          required>
+            <sui-select-option *ngFor="let option of select.filteredOptions"
+                              [value]="option">
+            </sui-select-option>
+          </sui-select>
+          <!-- <input type="text" name="category" placeholder="Category" [(ngModel)]="activityFormValues.category" required> -->
+        </div>
+
+        <div class="equal width fields">
+          <div class="field" [ngClass]="{error: date.invalid && date.touched}">
+            <div class="ui icon input">
+              <input 
+              suiDatepicker
+              name="date"
+              [(ngModel)]="activityFormValues.date"
+              pickerMode="date"
+              autocomplete="off"
+              placeholder="Date"
+              required
+              #date="ngModel"
+              >
+              <i aria-hidden="true" class="calendar circular inverted link icon"></i>
+            </div>
+          </div>
+  
+          <div class="field" [ngClass]="{error: time.invalid && time.touched}">
+            <div class="ui icon input">
+              <input 
+              suiDatepicker
+              name="time"
+              [(ngModel)]="activityFormValues.time"
+              pickerMode="time"
+              placeholder="Time"
+              autocomplete="off"
+              required
+              #time="ngModel"
+              >
+              <i aria-hidden="true" class="clock circular inverted link icon"></i>
+            </div>
+          </div>
         </div>
       
-        <div class="field">
-          <input type="datetime-local" name="date" placeholder="Date" [(ngModel)]="activity.date">
+        <div class="field" [ngClass]="{error: city.invalid && (city.touched || city.dirty)}">
+          <input type="text" name="city" placeholder="City" [(ngModel)]="activityFormValues.city" required #city="ngModel">
         </div>
       
-        <div class="field">
-          <input type="text" name="city" placeholder="City" [(ngModel)]="activity.city">
-        </div>
-      
-        <div class="field">
-          <input type="text" name="venue" placeholder="Venue" [(ngModel)]="activity.venue">
+        <div class="field" [ngClass]="{error: venue.invalid && (venue.touched || venue.dirty)}">
+          <input type="text" name="venue" placeholder="Venue" [(ngModel)]="activityFormValues.venue" required #venue="ngModel">
         </div>
     
-        <button class="ui positive button right floated" [ngClass]="{loading: submitting}" type="submit">Submit</button>
+        <button class="ui positive button right floated" [ngClass]="{loading: submitting}" type="submit" [disabled]="activityForm.form.invalid">Submit</button>
         <button class="ui button right floated" type="button" (click)="onCancel()">Cancel</button>
         
       </form>
