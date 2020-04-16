@@ -31,6 +31,7 @@ namespace Application.Activities
         if (activity == null)
           throw new RestException(HttpStatusCode.NotFound, new { activity = "Not Found" });
 
+        activity.Date = DateTime.SpecifyKind(activity.Date, DateTimeKind.Utc);
         return activity;
       }
     }
