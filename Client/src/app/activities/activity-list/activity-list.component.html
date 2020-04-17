@@ -1,6 +1,6 @@
 <ng-container *ngFor="let groupActivity of groupedActivities$ | async">
   <label  class="ui label large blue">
-    {{groupActivity[0]}}
+    {{groupActivity[0] | date:'fullDate'}}
   </label>
   <div class="ui items">
     <app-activity-list-item *ngFor="let activity of groupActivity[1]"  [activity]="activity"></app-activity-list-item>

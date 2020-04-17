@@ -12,9 +12,9 @@ import { Router } from '@angular/router';
   encapsulation: ViewEncapsulation.None
 })
 export class ActivityListComponent implements OnInit {
-  groupedActivities$ = this.store.activitiesByDate$();
+  groupedActivities$ = this.activityService.activitiesByDate$();
 
-  constructor(private store: Store) { }
+  constructor(private activityService: ActivityService) { }
 
   ngOnInit() {
   }

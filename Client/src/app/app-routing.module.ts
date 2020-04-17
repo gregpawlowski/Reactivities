@@ -7,13 +7,13 @@ import { NotFoundComponent } from './activities/not-found/not-found.component';
 
 
 const routes: Routes = [
-  { path: '', component: HomeLayoutComponent, pathMatch: 'full', children: [
-    { path: '', component: HomeComponent }
+  { path: '', component: HomeLayoutComponent, children: [
+    { path: '', component: HomeComponent },
   ]},
   { path: '', component: LoginLayoutComponent, children: [
     { path: 'activities', loadChildren: () => import('./activities/activities.module').then(m => m.ActivitiesModule) }
   ]},
-  { path: '**', component: NotFoundComponent}
+  { path: '**', redirectTo: ''}
 ];
 
 @NgModule({

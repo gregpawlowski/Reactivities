@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { tap, distinctUntilChanged, map, delay, filter, catchError, shareReplay } from 'rxjs/operators';
 import { Store } from '@store';
 import { LoadingService } from './loading.service';
@@ -38,6 +38,10 @@ export class ActivityService {
         tap(activities => {
           this.store.set('activities', activities);
           this.loadingService.stopLoading();
+        }),
+        catchError(err => {
+          this.loadingService.stopLoading();
+          return throwError(err);
         })
         );
   }
@@ -110,6 +114,27 @@ export class ActivityService {
           this.store.set('activities', ([...this.store.value.activities.filter(a => a.id !== id)]));
         })
       );
+  }
+
+  activitiesByDate$() {
+    return this.store.select<IActivity[]>('activities')
+      .pipe(
+        shareReplay(1),
+        filter<IActivity[]>(Boolean),
+        map(a => this.groupActivitiesByDate(a))
+      );
+  }
+
+  groupActivitiesByDate(activities: IActivity[]) {
+    const sortedActivities = activities.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    return Object.entries(sortedActivities.reduce((acc, activity) => {
+
+      const date = activity.date.toLocaleString().split(',')[0];
+
+      acc[date] = acc[date] ? [...acc[date], activity] : [activity];
+      return acc;
+    }, {} as {[key: string]: IActivity[]}));
   }
 
 }

@@ -17,7 +17,17 @@ import { NotFoundComponent } from './not-found/not-found.component';
 
 
 @NgModule({
-  declarations: [DashboardComponent, ActivityListComponent, ActivityDetailsComponent, ActivityFormComponent, ActivityListItemComponent, ActivityDetailedHeaderComponent, ActivityDetailedInfoComponent, ActivityDetailedChatComponent, ActivityDetailedSidebarComponent, NotFoundComponent],
+  declarations: [
+    DashboardComponent,
+    ActivityListComponent,
+    ActivityDetailsComponent,
+    ActivityFormComponent,
+    ActivityListItemComponent,
+    ActivityDetailedHeaderComponent,
+    ActivityDetailedInfoComponent,
+    ActivityDetailedChatComponent,
+    ActivityDetailedSidebarComponent,
+    NotFoundComponent],
   imports: [
     CommonModule,
     FormsModule,

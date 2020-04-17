@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoadingComponent } from './loading/loading.component';
-import { SuiDatepickerModule, SuiSelectModule } from 'ng2-semantic-ui';
+import { SuiDatepickerModule, SuiSelectModule, SuiDropdownModule, SuiModalModule, SuiMessageModule } from 'ng2-semantic-ui';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
 
@@ -9,12 +10,15 @@ import { SuiDatepickerModule, SuiSelectModule } from 'ng2-semantic-ui';
   declarations: [ LoadingComponent ],
   imports: [
     CommonModule,
-    SuiDatepickerModule,
   ],
   exports: [
     LoadingComponent,
     SuiDatepickerModule,
-    SuiSelectModule
+    SuiSelectModule,
+    SuiDropdownModule,
+    SuiModalModule,
+    SuiMessageModule,
+    FormsModule
   ]
 })
 export class SharedModule { }

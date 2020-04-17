@@ -13,6 +13,14 @@ import { LoginLayoutComponent } from './login-layout/login-layout.component';
 import { ErrorInterceptorProvider } from './shared/services/error.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { JwtModule } from '@auth0/angular-jwt';
+import { LoginFormComponent } from './auth/login-form/login-form.component';
+import { AuthModule } from './auth/auth.module';
+
+
+export function tokenGetter() {
+  return localStorage.getItem('jwt');
+}
 
 @NgModule({
   declarations: [
@@ -20,7 +28,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     NavbarComponent,
     HomeComponent,
     HomeLayoutComponent,
-    LoginLayoutComponent,
+    LoginLayoutComponent
   ],
   imports: [
     BrowserModule,
@@ -28,9 +36,17 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     HttpClientModule,
     ActivitiesModule,
     SharedModule,
+    AuthModule,
     BrowserAnimationsModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right'
+    }),
+    JwtModule.forRoot({
+      config: {
+        tokenGetter,
+        whitelistedDomains: ['localhost:5000'],
+        blacklistedRoutes: ['localhost:5000/auth']
+      }
     })
   ],
   providers: [ ErrorInterceptorProvider ],

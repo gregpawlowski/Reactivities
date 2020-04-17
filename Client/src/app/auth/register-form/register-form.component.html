@@ -1,0 +1,51 @@
+
+<h2 class="ui header teal center">
+  Sign Up to Reactivities
+</h2>
+<div class="content">
+  <form class="ui form" #loginForm="ngForm" (ngSubmit)="handleSubmit($event, loginForm)">
+
+    <div class="field" [ngClass]="{error: username.invalid && (username.touched || username.dirty)}">
+      <input type="text" name="username" placeholder="Username" [(ngModel)]="formValues.username" required #username="ngModel">
+      <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="username.invalid && (username.dirty || username.touched) && username.errors.required">
+        Username is required
+      </div>
+    </div>
+
+    <div class="field" [ngClass]="{error: displayName.invalid && (displayName.touched || displayName.dirty)}">
+      <input type="text" name="displayName" placeholder="Display Name" [(ngModel)]="formValues.displayName" required #displayName="ngModel">
+      <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="displayName.invalid && (displayName.dirty || displayName.touched) && displayName.errors.required">
+        Display name is required
+      </div>
+    </div>
+  
+    <div class="field" [ngClass]="{error: email.invalid && (email.touched || email.dirty)}">
+      <input type="text" name="email" placeholder="Email" [(ngModel)]="formValues.email" required #email="ngModel">
+      <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="email.invalid && (email.dirty || email.touched) && email.errors.required">
+        Email is required
+      </div>
+    </div>
+  
+    <div class="field" [ngClass]="{error: password.invalid && (password.touched || password.dirty)}">
+      <input type="text" name="title" placeholder="Password" [(ngModel)]="formValues.password" required #password="ngModel">
+      <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="password.invalid && (password.dirty || password.touched) && password.errors.required">
+        Password is required
+      </div>
+    </div>
+    
+    <sui-message class="error" *ngIf="submitError">
+      <div class="header">
+          {{ submitError.statusText }}
+      </div>
+      <ul class="list" *ngIf="submitError.error.errors">
+        <li class="content" *ngFor="let error of errorValues()">{{ error }}
+        </li>
+      </ul>
+    </sui-message>
+
+    <br>
+  
+    <button class="ui teal button fluid" type="submit" [ngClass]="{loading: submitting}" [disabled]="!loginForm.dirty || loginForm.form.invalid">Register</button>
+    
+  </form>
+</div>

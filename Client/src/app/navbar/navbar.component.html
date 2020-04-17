@@ -6,5 +6,23 @@
       true}">Activities</a>
     <a class="item" [routerLink]="['/', 'activities', 'new']" routerLinkActive="active" [routerLinkActiveOptions]="{exact:
       true}"><button class="ui button positive">Create Activity</button></a>
+    
+    <div class="item right" *ngIf="(user$ | async) as user">
+      <img [src]="user.image || '../../assets/user.png'" class="ui image right avatar">
+      
+      <div class="ui top left pointing dropdown" suiDropdown>
+        {{user.displayName}}<i class="dropdown icon"></i>
+        <div class="menu" suiDropdownMenu>
+            <div routerLink="/profile/username" class="item">
+              <i class="user icon"></i>My Profile
+            </div>
+            <div class="item" (click)="onLogout()">
+              <i class="power icon"></i>Logout
+            </div>
+        </div>
+      </div>
+
+    </div>
+    
   </div>
 </div>

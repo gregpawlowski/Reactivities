@@ -4,7 +4,14 @@
       <img src="../../assets/logo.png" alt="" class="ui image massive" style="margin-bottom: 12px;">
       Reactivities
     </h1>
-    <h2 class="ui header inverted">Welcome to Reactivities</h2>
-    <a routerLink="/activities" class="ui button huge inverted">Take me to the activities!</a>
+    <ng-container *ngIf="(user$ | async) as user; else notLoggedIn">
+      <h2 class="ui header inverted">Welcome back {{user.displayName}}</h2>
+      <a routerLink="/activities" class="ui button huge inverted">Take me to the activities!</a>
+    </ng-container>
+    <ng-template #notLoggedIn>
+      <h2 class="ui header inverted">Welcome to Reactivities</h2>
+      <a class="ui button huge inverted" (click)="onLoginClick()">Login</a>
+      <a class="ui button huge inverted" (click)="onRegisterClick()">Register</a>
+    </ng-template>
   </div>
 </div>

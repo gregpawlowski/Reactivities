@@ -1,6 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { ActivityService } from '../shared/services/activity.service';
-import { Store } from '@store';
+import { UserService } from '../shared/services/user.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -8,10 +8,16 @@ import { Store } from '@store';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
+  user$ = this.userService.user$;
 
-  constructor(private store: Store) { }
+  constructor(private userService: UserService, private router: Router) { }
 
   ngOnInit() {
+  }
+
+  onLogout() {
+    this.userService.logout();
+    this.router.navigate(['/']);
   }
 
 }
