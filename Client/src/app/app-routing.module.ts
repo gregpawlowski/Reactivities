@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { HomeLayoutComponent } from './home-layout/home-layout.component';
 import { LoginLayoutComponent } from './login-layout/login-layout.component';
 import { NotFoundComponent } from './activities/not-found/not-found.component';
+import { AuthGuard } from './auth/auth.guard';
 
 
 const routes: Routes = [
@@ -11,7 +12,7 @@ const routes: Routes = [
     { path: '', component: HomeComponent },
   ]},
   { path: '', component: LoginLayoutComponent, children: [
-    { path: 'activities', loadChildren: () => import('./activities/activities.module').then(m => m.ActivitiesModule) }
+    { path: 'activities', canLoad: [AuthGuard], loadChildren: () => import('./activities/activities.module').then(m => m.ActivitiesModule) }
   ]},
   { path: '**', redirectTo: ''}
 ];

@@ -3,6 +3,8 @@ import { ActivityService, IActivity } from './shared/services/activity.service';
 import { Store } from '@store';
 import { UserService } from './shared/services/user.service';
 import { LoadingService } from './shared/services/loading.service';
+import { finalize } from 'rxjs/operators';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -13,16 +15,21 @@ export class AppComponent implements OnInit {
   title = 'Reactivities';
   appLoaded = false;
 
-  constructor(private userService: UserService, private loadingService: LoadingService) {}
+  constructor(private userService: UserService, private loadingService: LoadingService, private router: Router) {}
 
   ngOnInit() {
     this.loadingService.startLoading('Loading application');
 
     if (localStorage.getItem('jwt')) {
       this.userService.getCurrentUser()
-        .subscribe(undefined, undefined, () => {
-          this.loadingService.stopLoading();
-          this.appLoaded = true;
+        .pipe(
+          finalize(() => {
+            this.loadingService.stopLoading();
+            this.appLoaded = true;
+        }))
+        .subscribe(undefined, (error) => {
+          console.log('Error loading the user', error);
+          this.router.navigate(['']);
         });
     } else {
       this.loadingService.stopLoading();

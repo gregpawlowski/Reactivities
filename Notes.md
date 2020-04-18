@@ -971,4 +971,234 @@ Now wwe can use this as a Validator
 Currently logged in user can be taken from the Claims.
 
 
-New interface 
+
+# EF Relationships
+## One To One
+User -> Address
+
+## One To Many
+User -> Many Photos
+
+## Many To Many
+User -> Many UserActivites <- Activity 
+
+Here a UserActivites table is used as a join table
+A user can have many Acivities
+and an Activity can have many users
+
+This cannot be mapped direcly in a relational database, have to set up two two one to many relationships instead.
+Instead this UserActivites table will have a compound primary key so no same user can belong to the same activity twice and vice versa.
+
+
+## Fluent API Many-To-Many
+First set up Navigation properties in Models
+UserActivity Model
+```C#
+using System;
+
+namespace Domain
+{
+    public class UserActivity
+    {
+        public string AppUserId { get; set; }
+        public AppUser AppUser { get; set; }
+        public Guid ActivityId { get; set; }
+        public Activity Activity { get; set; }
+        public DateTime DateJoined { get; set; }
+        public bool IsHost { get; set; }
+    }
+}
+```
+
+```C#
+  public ICollection<UserActivity> UserActivites { get; set; }
+```
+
+Next configure relationships in EF FluentAPI
+Fist configure the compount Primary Key - This is so no user with same activity can exist twice.
+Set up foreign keys will create a constriant so you cannot add a userActivity if the user and the activity doesn't exist in their respective tables.
+```C#
+            builder.Entity<UserActivity>(x => x.HasKey(ua => new {ua.AppUserId, ua.ActivityId}));
+
+            builder.Entity<UserActivity>()
+                .HasOne(u => u.AppUser)
+                .WithMany(a => a.UserActivites)
+                .HasForeignKey(u => u.AppUserId);
+
+            builder.Entity<UserActivity>()
+                .HasOne(a => a.Activity)
+                .WithMany(u => u.UserActivities)
+                .HasForeignKey(u => u.ActivityId);
+```
+
+## Eager Loading related data
+
+Data can be
+Eager Loaded - Data laoded as part of the actual query / using Include in the Query
+Explicit Loading - means that the related data is explicitly loaded from the database at a later time. 
+Lazy Loading - Lazy loading means that the related data is transparently loaded from the database when the navigation property is accessed.
+
+Eager Loading Data
+```C#
+        var activities = await _context.Activities
+          .Include(x => x.UserActivities)
+          .ThenInclude(x => x.AppUser)
+          .ToListAsync();
+```
+
+## Self Referencing Loop
+Core 3.0 user Test.Json and it will throw a self refrencing loop error
+`System.Text.Json.JsonException: A possible object cycle was detected which is not supported. This can either be due to a cycle or if the object depth is larger than the maximum allowed depth of 32.`
+
+This error happens becuae if yiou look at the data above
+We pull the Activity and Include the UserActivites, UserActivites then includes the AppUser
+The AppUser has userActivites navigation which includes the UserActivity which then includes the Activity etc...
+
+This happens becuase EF automaticlly will populate data it has in memory
+
+From https://docs.microsoft.com/en-us/ef/core/querying/related-data#explicit-loading
+Entity Framework Core will automatically fix-up navigation properties to any other entities that were previously loaded into the context instance. So even if you don't explicitly include the data for a navigation property, the property may still be populated if some or all of the related entities were previously loaded.
+
+# DTO's
+DTO's can be used to shape the data so we don't run into the self referencing loop. We can create Dto's then map our Entities to them in a way so we don't include the reference data the is looping.
+
+However this might get tedious so it's a good idea to user AutoMapper to automatically map these properties.
+
+
+## Adding Automapper 
+`AutoMapper.Extenstions.Microsoft.DependencyInjection`
+
+Add Automapper as service to Startup
+
+```C#
+       // Set up Automapper and tell it which Assembly to look for AutoMapper profiles.
+            services.AddAutoMapper(typeof(List.Handler));
+```
+
+## Adding Mapping Profile
+
+Atomapper will try to map properties by convention but all names must match.
+
+It will not do deep mapping unless specified.
+```C#
+     CreateMap<Activity, ActivityDto>();
+      CreateMap<UserActivity, AttendeeDto>()
+          .ForMember(d => d.Username, o => o.MapFrom(s => s.AppUser.UserName))
+          .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.AppUser.DisplayName));
+```
+Here we have to tell Autmapper that when it maps the UserActivity 
+
+## Sending down different proeprty names
+In the Activity Dtos we don't want to call UserActivities the same thing
+
+Since we are using System.Text.Json we can use an atrtibute to call the property something else when serializing.
+
+```C#
+      [JsonPropertyName("attendees")]
+        public ICollection<AttendeeDto> UserActivities { get; set; }
+```
+
+## Using LazyLoading
+Instead of using Include and ThenInclude we can LazyLoad.
+We can then remove Include and when we transperantly load the data.
+
+First install Proxies
+`Microsoft.EntityFrameworkCore.Proxies` Needs to be the same version as EFCore version.
+
+Add it to Persistance Project, it's related to EF
+
+```C#
+     services.AddDbContext<DataContext>(opt => {
+                opt.UseLazyLoadingProxies();
+                opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
+```
+
+To use this we have to tell EF which properties are navigation properties
+Inside out Doamins we have to add the virtual keyword.
+```C#
+        public virtual ICollection<UserActivity> UserActivities { get; set; }
+```
+
+We can now remove Include().
+
+
+# Creating a Custom Auth Policy
+Since we only want some routes to be aviable to hosts of the activity we can create a custom Auth Policy.
+
+For exmaple, only host of an activity can Delete an activity or Edit an activity.
+
+The logic can be added to the handler to check but its better long term to add a policy.
+
+Infrastructure -> Security
+```C# IsHostRequired
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Persistence;
+
+namespace Infrastructure.Security
+{
+  public class IsHostRequirement : IAuthorizationRequirement
+  {
+  }
+
+  public class IsHostRequirementHandler : AuthorizationHandler<IsHostRequirement>
+  {
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly DataContext _context;
+    public IsHostRequirementHandler(IHttpContextAccessor httpContextAccessor, DataContext context)
+    {
+      _context = context;
+      _httpContextAccessor = httpContextAccessor;
+    }
+
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsHostRequirement requirement)
+    {
+        // var currentUserName = _httpContextAccessor.HttpContext.User?.Claims?.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        var currentUserName = context?.User?.Claims?.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        //  Get Activity ID from the route values
+        var activityId = Guid.Parse(_httpContextAccessor.HttpContext.Request.RouteValues.SingleOrDefault(x => x.Key == "id").Value.ToString());
+        
+        // Result will extract the task from the FindAsync since this isn't an async function
+        var activity = _context.Activities.FindAsync(activityId).Result;
+
+        // UserActivities will be pulled automaticlaly by proxy since we are making use of it so no need to use Include().
+        // We use LINQ to search UserActivites and find the user that is host.
+        var host = activity?.UserActivities.FirstOrDefault(x => x.IsHost);
+
+        // Now we can check if the host username is the same as the claims user.
+        if (host?.AppUser?.UserName == currentUserName)
+            context.Succeed(requirement);
+        
+        return Task.CompletedTask;
+    }
+  }
+}
+```
+
+Set up the Policy in Startup
+```C#
+            services.AddAuthorization(opt => 
+            {
+                opt.AddPolicy("IsActivityHost", policy => {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+
+            // Transient is only avialbe for the lifetime of the operation, not the whole request
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+```
+
+Now in the controller we can add the Policy in the controllers
+
+```C#
+  [HttpPut("{id}")]
+  [Authorize(Policy = "IsActivityHost")]
+```
+
