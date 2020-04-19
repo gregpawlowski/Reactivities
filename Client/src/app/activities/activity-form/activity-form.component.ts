@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivityService, IActivity } from '../../shared/services/activity.service';
+import { ActivityService } from '../../shared/services/activity.service';
 import { NgForm } from '@angular/forms';
 import { v4 as uuid } from 'uuid';
 import { Store } from '@store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { IActivity } from 'src/app/shared/models/activity';
 
 
 interface IActivityFormValues extends IActivity {
@@ -27,7 +28,7 @@ export class ActivityFormComponent implements OnInit {
     time: null,
     category: '',
     city: '',
-    venue: '',
+    venue: ''
   };
 
   categories = [
@@ -53,7 +54,11 @@ export class ActivityFormComponent implements OnInit {
     if (this.route.snapshot.params.id) {
       this.activityService.getActivityDetails(this.route.snapshot.params.id)
         .subscribe(() => {
-          this.activityFormValues = { ...this.store.value.activity, time: this.store.value.activity.date };
+          this.activityFormValues = {
+            ...this.store.value.activity,
+            category: this.store.value.activity.category.toLowerCase(),
+            time: this.store.value.activity.date
+          };
           this.cd.markForCheck();
         });
     }
@@ -63,7 +68,7 @@ export class ActivityFormComponent implements OnInit {
     this.submitting = true;
 
     const {date, time, ...activityWithoutDate} = this.activityFormValues;
-    const activity: IActivity = { ...activityWithoutDate, date: this.combineDateAndTime(date, time) };
+    const activity = { ...activityWithoutDate, date: this.combineDateAndTime(date, time) };
 
     if (!this.activityFormValues.id) {
       const id = uuid();

@@ -5,36 +5,32 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import { tap, distinctUntilChanged, map, delay, filter, catchError, shareReplay } from 'rxjs/operators';
 import { Store } from '@store';
 import { LoadingService } from './loading.service';
+import { IActivity } from '../models/activity';
+import { IUser } from '../models/user';
+import { AttendanceService } from './attendance.service';
 
 const apiBase = environment.apiBase;
-
-export interface IActivity {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: Date;
-  city: string;
-  venue: string;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ActivityService {
 
-  constructor(private http: HttpClient, private store: Store, private loadingService: LoadingService) { }
+  constructor(
+    private http: HttpClient,
+    private store: Store,
+    private loadingService: LoadingService,
+    private attendanceService: AttendanceService
+  ) { }
 
   getActivities() {
     this.loadingService.startLoading('Loading Activities');
+    const user = this.store.value.user;
 
     return this.http.get<IActivity[]>(apiBase + 'activities')
       .pipe(
         delay(1000),
-        map(res => res.map(a => {
-          a.date = new Date(a.date);
-          return a;
-        })),
+        map(activites => activites.map(activity => this.setActivityProps(activity, user))),
         tap(activities => {
           this.store.set('activities', activities);
           this.loadingService.stopLoading();
@@ -57,17 +53,11 @@ export class ActivityService {
       return of(activityFromStore);
     } else {
       this.loadingService.startLoading('Loading Activity');
+      const user = this.store.value.user;
       return this.http.get<IActivity>(apiBase + 'activities/' + id)
         .pipe(
           delay(1000),
-          map(a => {
-            console.log('activity service:', a.date);
-            if (a) {
-              // a.date = a.date.split('.')[0];
-              a.date = new Date(a.date);
-              return a;
-            }
-          }),
+          map(activity => this.setActivityProps(activity, user)),
           tap(activity => {
             this.store.set('activity', activity);
             this.loadingService.stopLoading();
@@ -85,9 +75,15 @@ export class ActivityService {
       .pipe(
         delay(1000),
         tap(() => {
+          const attendee = this.attendanceService.createAttendee(this.store.value.user);
+          attendee.isHost = true;
+          activity.attendees = [attendee];
+          activity.isHost = true;
+
           if (this.store.value.activities) {
             this.store.set('activities', [...this.store.value.activities, activity]);
           }
+
           this.store.set('activity', activity);
         })
       );
@@ -135,6 +131,13 @@ export class ActivityService {
       acc[date] = acc[date] ? [...acc[date], activity] : [activity];
       return acc;
     }, {} as {[key: string]: IActivity[]}));
+  }
+
+  setActivityProps(activity: IActivity, user: IUser) {
+      activity.date = new Date(activity.date);
+      activity.isGoing = activity.attendees.some(attendee => attendee.username === user.username);
+      activity.isHost = activity.attendees.some(attendee => attendee.username === user.username && attendee.isHost);
+      return activity;
   }
 
 }

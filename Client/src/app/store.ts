@@ -1,9 +1,10 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, pluck, filter, map, shareReplay } from 'rxjs/operators';
 
-import { IActivity } from './shared/services/activity.service';
+
 import { Injectable } from '@angular/core';
 import { IUser } from './shared/models/user';
+import { IActivity } from './shared/models/activity';
 
 
 export interface State {

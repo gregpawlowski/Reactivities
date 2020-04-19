@@ -2,12 +2,12 @@
   <div class="ui segment">
     <div class="ui items">
       <div class="item">
-        <div class="ui tiny image circular"><img src="../../../assets/user.png" /></div>
+        <div class="ui tiny image circular"><img src="findHost().image || ../../../assets/user.png" /></div>
         <div class="content">
-          <a class="header">{{activity.title}}</a>
-          <div class="description">
-            Hosted by Bob
-          </div>
+          <a class="header" (click)="onViewClick(activity)">{{activity.title}}</a>
+          <div class="description">Hosted by {{findHost().displayName}}</div>
+          <div class="description" *ngIf="activity.isHost"><label class="ui label basic orange">You are hosting this activity</label></div>
+          <div class="description" *ngIf="activity.isGoing && !activity.isHost"><label class="ui label basic green">You are going to this activity</label></div>
         </div>
       </div>
     </div>
@@ -17,7 +17,11 @@
     <i aria-hidden="true" class="marker icon"></i>{{activity.venue}}, {{activity.city}}
   </div>
   <div class="ui segment secondary">
-    Attendees will go here
+    <div role="list" class="ui horizontal list">
+      <div role="listitem" class="item" *ngFor="let attendee of activity.attendees">
+          <img [src]="attendee.image || '/assets/user.png'" class="ui avatar image" suiPopup [popupText]="attendee.displayName"/>
+      </div>
+    </div>
   </div>
   <div class="ui segment clearing">
     <span>{{activity.description}}</span>

@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ActivityService, IActivity } from '../../shared/services/activity.service';
+import { ActivityService } from '../../shared/services/activity.service';
 import { Store } from '@store';
 
 @Component({

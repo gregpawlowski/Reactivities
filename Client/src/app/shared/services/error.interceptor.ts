@@ -13,13 +13,10 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.log('Error:', error);
-        console.log('Request', req);
-
         if (error.status === 0) {
           this.toastr.error('Network error - make sure API is running');
         }
-        if (error.status === 404) {
+        if (error.status === 404 && req.method === 'GET') {
           this.router.navigate(['activities', 'notfound']);
           return throwError(error.error);
         }

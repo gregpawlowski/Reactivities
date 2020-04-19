@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, ViewEncapsulation, Directive } from '@angular/core';
-import { IActivity, ActivityService } from 'src/app/shared/services/activity.service';
+import { ActivityService } from 'src/app/shared/services/activity.service';
 import { Router } from '@angular/router';
+import { IActivity } from 'src/app/shared/models/activity';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -22,14 +23,8 @@ export class ActivityListItemComponent implements OnInit {
     this.router.navigate(['activities', activity.id]);
   }
 
-  // deleteActivity(id: string) {
-  //   this.submitting = true;
-  //   this.targetId = id;
-  //   this.activityService.deleteActivity(id)
-  //     .subscribe(() => {
-  //       this.submitting = false;
-  //       this.targetId = '';
-  //     });
-  // }
+  findHost() {
+    return this.activity.attendees.find(a => a.isHost);
+  }
 
 }

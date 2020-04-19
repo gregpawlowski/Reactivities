@@ -1,8 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
-import { IActivity, ActivityService } from '../../shared/services/activity.service';
-import { Observable } from 'rxjs';
-import { Store } from '@store';
-import { Router } from '@angular/router';
+import { ActivityService } from '../../shared/services/activity.service';
 
 @Component({
   selector: 'app-activity-list',

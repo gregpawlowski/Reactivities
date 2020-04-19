@@ -14,7 +14,6 @@ import { ErrorInterceptorProvider } from './shared/services/error.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { JwtModule } from '@auth0/angular-jwt';
-import { LoginFormComponent } from './auth/login-form/login-form.component';
 import { AuthModule } from './auth/auth.module';
 
 

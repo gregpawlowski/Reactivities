@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { ActivityService, IActivity } from '../../shared/services/activity.service';
+import { ActivityService } from '../../shared/services/activity.service';
 import { Observable, Subscription } from 'rxjs';
 import { Store } from '@store';
 import { ActivatedRoute, Router } from '@angular/router';
+import { IActivity } from 'src/app/shared/models/activity';
 
 @Component({
   selector: 'app-activity-details',

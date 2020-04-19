@@ -1,13 +1,13 @@
 <div class="ui segments clearing">
   <div class="ui segment basic attached top" style="padding: 0">
-    <img src="../../../assets/categoryImages/{{activity.category}}.jpg" class="ui fluid image" />
+    <img src="../../../assets/categoryImages/{{activity.category | lowercase}}.jpg" class="ui fluid image" />
     <div class="ui basic segment textSegment">
       <div class="items">
         <div class="item">
           <div class="content">
             <div class="ui huge header" style="color: white">{{activity.title}}</div>
             <p>{{activity.date | date:'EEEE MMMM d'}}</p>
-            <p>Hosted by <strong>Bob</strong></p>
+            <p>Hosted by {{findHost().displayName}}</p>
           </div>
         </div>
       </div>
@@ -15,8 +15,8 @@
   </div>
 
   <div class="ui segment clearing bottom attached">
-    <button class="ui button teal">Join Activity</button>
-    <button class="ui button">Cancel attendance</button>
-    <a class="ui button right floated orange" routerLink="edit">Manage Event</a>
+      <button class="ui button teal" *ngIf="!activity.isGoing && !activity.isHost" (click)="onJoinClick($event)" [ngClass]="{loading: saving}">Join Activity</button>
+      <button class="ui button" *ngIf="activity.isGoing && !activity.isHost" (click)="onCancelClick($event)" [ngClass]="{loading: saving}">Cancel attendance</button>
+    <a class="ui button right floated orange" routerLink="edit" *ngIf="activity.isHost">Manage Event</a>
   </div>
 </div>

@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { IActivity } from 'src/app/shared/services/activity.service';
+import { IActivity } from 'src/app/shared/models/activity';
+
 
 @Component({
   selector: 'app-activity-detailed-info',

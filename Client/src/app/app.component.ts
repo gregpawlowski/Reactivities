@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivityService, IActivity } from './shared/services/activity.service';
+import { ActivityService } from './shared/services/activity.service';
 import { Store } from '@store';
 import { UserService } from './shared/services/user.service';
 import { LoadingService } from './shared/services/loading.service';

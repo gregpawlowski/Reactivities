@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoadingComponent } from './loading/loading.component';
-import { SuiDatepickerModule, SuiSelectModule, SuiDropdownModule, SuiModalModule, SuiMessageModule } from 'ng2-semantic-ui';
+import { SuiDatepickerModule, SuiSelectModule, SuiDropdownModule, SuiModalModule, SuiMessageModule, SuiPopupModule } from 'ng2-semantic-ui';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
@@ -18,6 +18,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     SuiDropdownModule,
     SuiModalModule,
     SuiMessageModule,
+    SuiPopupModule,
     FormsModule
   ]
 })

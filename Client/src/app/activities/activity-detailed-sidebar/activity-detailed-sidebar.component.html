@@ -1,31 +1,16 @@
 <div class="ui segment center aligned top attached secondary inverted teal" style="border: none">
-  3 People Going
+  {{ attendees.length }} {{ attendees.length > 1 ? 'People' : 'Person' }} Going
 </div>
 
 <div class="ui segment attached">
   <div class="ui list relaxed divided">
 
-    <div class="ui item" style="position: relative;">
-      <div class="ui label orange right ribbon" style="position: absolute;">Host</div>
-      <img  class="ui tiny image" src="../../../assets/user.png" alt="">
+    <div class="ui item" style="position: relative;" *ngFor="let attendee of attendees">
+      <div *ngIf="attendee.isHost" class="ui label orange right ribbon" style="position: absolute;">Host</div>
+      <img  class="ui tiny image" src="attendee.image || ../../../assets/user.png" alt="">
       <div class="content center aligned">
-        <h3 class="header"><a href="#">Bob</a></h3>
+        <h3 class="header"><a routerLink="/profile/{{attendee.username}}">{{attendee.displayName}}</a></h3>
         <div class="extra" style="color: orange">Following</div>
-      </div>
-    </div>
-    
-    <div class="ui item" style="position: relative;">
-      <img  class="ui tiny image" src="../../../assets/user.png" alt="">
-      <div class="content center aligned">
-        <h3 class="header"><a href="#">Bob</a></h3>
-        <div class="extra" style="color: orange">Following</div>
-      </div>
-    </div>
-    
-    <div class="ui item" style="position: relative;">
-      <img  class="ui tiny image" src="../../../assets/user.png" alt="">
-      <div class="content center aligned">
-        <h3 class="header"><a href="#">Bob</a></h3>
       </div>
     </div>
 
