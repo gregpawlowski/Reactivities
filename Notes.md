@@ -1202,3 +1202,382 @@ Now in the controller we can add the Policy in the controllers
   [Authorize(Policy = "IsActivityHost")]
 ```
 
+# Photo Upload
+
+## Options
+Database - Not efficient, database is not optimized, dis pace is an issue possibly, authentication is easy.
+Filesystem - Good for storing files, disk space is an issue. File permissions are needed for the web service to write to the server.
+Cloud - Scalable, potentially faster, secured with API key, could be more expensive price wise.
+
+
+## Cloudinary Architecture
+API Controller => Handeler => Photo Accessor => Cloudinary
+
+## Setting Up Cloudinary in API
+
+### Add secrets 
+dotnet user-secrets set "Cloudinary:CloudName" "XXX"
+dotnet user-secrets set "Cloudinary:ApiKey" "XXXX"
+dotnet user-secrets set "Cloudinary:ApiSecret" "XXXX"
+
+`dotnet user-secrets list`
+
+### Add Settings Class
+Infrastructure => Photos => CloudinarySettings.cs
+
+```C#
+namespace Infrastructure.Photos
+{
+    public class CloudinarySettings
+    {
+        public string CloudName { get; set; }
+        public string ApiKey { get; set; }
+        public string ApiSecret { get; set; }
+    }
+}
+```
+
+### Add Settings to Services
+```C#
+            // Strongly type our Cloudinary Settings based on the class. 
+            // Settings are saved in user-secrets "Cloudinary" section.
+            services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
+```
+
+### Install Cloudinary .NET in INfrastructure
+`CloudinaryDotNet`
+Add it to the Infrastructure project, this project will be the one taht will hold the implementation to access the photos using a PhotoAccessor service.
+The Application project will have an interface to the PhotoAcessor. 
+
+## Adding Application Logic for PHoto upload
+
+### Interface in Application
+```C#
+using Application.Photos;
+using Microsoft.AspNetCore.Http;
+
+namespace Application.Interfaces
+{
+    public interface IPhotoAccessor
+    {
+        PhotoUploadResult AddPhoto(IFormFile file);
+
+        string DeletePhoto(string publicId);
+    }
+}
+```
+
+We get a PhotoUploadResult from the AddPhoto. We're going to make this class, that's becuase the CLoudinary API will return a ImageUploadResult but we don't have access to CloudinaryNet project as it's a dependency in the Infrastructure project.
+
+```C#
+namespace Application.Photos
+{
+  public class PhotoUploadResult
+  {
+    public string PublicId { get; set; }
+    public string Url { get; set; }
+  }
+}
+```
+
+### Implementation in Infrastructure Project To Add Photo
+```C#
+using Application.Interfaces;
+using Application.Photos;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+
+namespace Infrastructure.Photos
+{
+  public class PhotoAccessor : IPhotoAccessor
+  {
+    private readonly Cloudinary _cloudinary;
+
+    // Use IOptions to retrieve our configured options of CloudinarySettings
+    public PhotoAccessor(IOptions<CloudinarySettings> config)
+    {
+        var acc = new Account(
+            config.Value.CloudName,
+            config.Value.ApiKey,
+            config.Value.ApiSecret
+        );
+        
+        // Create a new cloudinary instance by passing in account
+        _cloudinary = new Cloudinary(acc);
+    }
+
+    public PhotoUploadResult AddPhoto(IFormFile file)
+    {
+        var uploadResult = new ImageUploadResult();
+
+        if (file.Length > 0)
+        {
+            // Read file into memmory using a readstream
+            // Have to use a using statement becuaes readstream is a disposavble.
+            using(var stream = file.OpenReadStream())
+            {
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream)
+                };
+
+                uploadResult = _cloudinary.Upload(uploadParams);
+            }
+        }
+
+        // Return a Photo Result Object
+        return new PhotoUploadResult
+        {
+            Url = uploadResult.SecureUri.AbsoluteUri,
+            PublicId = uploadResult.PublicId
+        };
+    }
+
+    public string DeletePhoto(string publicId)
+    {
+      throw new System.NotImplementedException();
+    }
+  }
+}
+```
+
+Add to Startup as a service so that it's injectable
+
+```C#
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+```
+
+## New Photo Entity
+We will need a new Entitiy becuase we'll be saving the photo informaiton after uploading to cloudinary into our database.
+
+```C#
+namespace Domain
+{
+    public class Photo
+    {
+        public string Id { get; set; }
+        public string Url { get; set; }
+        public bool IsMain { get; set; }
+    }
+}
+```
+
+This will be a one-to-many relationship, one User can have many photos.
+
+```C#
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+
+namespace Domain
+{
+    public class AppUser : IdentityUser
+    {
+        public string DisplayName { get; set; }
+        public string Bio { get; set; }
+        public virtual ICollection<UserActivity> UserActivites { get; set; }
+        public virtual ICollection<Photo> Photos { get; set; }
+    }
+}
+```
+
+!! And of course we have to add the Photos to the DbSet in DBConext
+
+Now that we set up the Entities, Entitiy Framework will implicitely set up a one to many relationshyip in the database of our choice
+It will create a Photos table and set up the Id as the PK (Unique Key), it will aslso automatically add a AppUser_Id column to the photos table which will be the foreign key to the AppUsers table. 
+
+## Adding a Handler for Photos
+Normally you don't return anythign from a Command, but we will have to return the URL from Cloudinary
+
+```C#
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Interfaces;
+using Domain;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Photos
+{
+  public class Add
+  {
+    public class Command : IRequest<Photo>
+    {
+      public IFormFile file { get; set; }
+    }
+
+    public class Handler : IRequestHandler<Command, Photo>
+    {
+      private readonly DataContext _context;
+      private readonly IUserAccessor _userAccessor;
+      private readonly IPhotoAccessor _photoAccessor;
+      public Handler(DataContext context, IUserAccessor userAccessor, IPhotoAccessor photoAccessor)
+      {
+        _photoAccessor = photoAccessor;
+        _userAccessor = userAccessor;
+        _context = context;
+      }
+      public async Task<Photo> Handle(Command request, CancellationToken cancellationToken)
+      {
+        var photoUploadResult = _photoAccessor.AddPhoto(request.file);
+
+        var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == _userAccessor.GetCurrentUsername());
+
+        var photo = new Photo
+        {
+            Url = photoUploadResult.Url,
+            Id = photoUploadResult.PublicId
+        };
+
+        if (!user.Photos.Any(p => p.IsMain == true))
+            photo.IsMain = true;
+
+        user.Photos.Add(photo);
+
+        var success = await _context.SaveChangesAsync() > 0;
+
+        if (success) return photo;
+
+        throw new Exception("Problem saving changes");
+      }
+    }
+  }
+}
+```
+
+## Adding a Photos Controller
+```C#
+using System.Threading.Tasks;
+using Application.Photos;
+using Domain;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers
+{
+    public class PhotosController : BaseController
+    {
+        [HttpPost]
+        public async Task<ActionResult<Photo>> Add([FromForm] Add.Command command)
+        {
+            return await Mediator.Send(command);
+        }
+    }
+}
+```
+
+## Unsupported Media Type Error
+This error is happening becuase the method isn't able to assertain where to get info from.
+WE have to tell it to look in the form [FromForm]
+
+
+## Returning a User Profile
+
+
+## Deleting a photo
+
+First add the accessor method to Cloudinary in PhotoAccessor.cs
+```C#
+    public string DeletePhoto(string publicId)
+    {
+        var deleteParams = new DeletionParams(publicId);
+
+        var result = _cloudinary.Destroy(deleteParams);
+
+        return result.Result == "ok" ? result.Result : null;
+    }
+```
+Add the Handler which will be a command
+
+```C#
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Errors;
+using Application.Interfaces;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Photos
+{
+  public class Delete
+  {
+    public class Command : IRequest
+    {
+      public string PublicId { get; set; }
+    }
+
+    public class Handler : IRequestHandler<Command>
+    {
+      private readonly DataContext _context;
+      private readonly IUserAccessor _userAccessor;
+      private readonly IPhotoAccessor _photoAccessor;
+      public Handler(DataContext context, IUserAccessor userAccessor, IPhotoAccessor photoAccessor)
+      {
+        _photoAccessor = photoAccessor;
+        _userAccessor = userAccessor;
+        _context = context;
+      }
+      public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+      {
+        var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == _userAccessor.GetCurrentUsername());
+
+        var photo = user.Photos.FirstOrDefault(x => x.Id == request.PublicId);
+
+        if (photo == null)
+            throw new RestException(HttpStatusCode.NotFound, new { Photo = "Not found" });
+
+        if (photo.IsMain)
+            throw new RestException(HttpStatusCode.BadRequest, new { Photo = "Cannot delete main photo"});
+
+        var deleteResult = _photoAccessor.DeletePhoto(photo.Id);
+
+        if (deleteResult == null)
+            throw new Exception("Problem deleting the photo");
+
+        _context.Photos.Remove(photo);
+        
+        // handler logic
+        var success = await _context.SaveChangesAsync() > 0;
+
+        if (success) return Unit.Value;
+
+        throw new Exception("Problem saving changes");
+      }
+    }
+  }
+```
+
+Because of the way we set up our on-to-many in the domain classes by convention if we do a `_context.user.Photos.Remove(photo)` instead of `_context.Photos.Remove(photo)` we will be actaully nulling out the foreign key and not deleting the row in the photos table. The foreign key will be set to nullable.
+
+
+## Adding Mapping for Images
+Currently we're sending back null but now that we have images, we can return the main image for the user with the profile as well as the activity etc...
+
+Send down with user:
+```C#
+user.Photos.FirstOrDefault(p => p.IsMain)?.Url
+```
+
+Update mapping profile to return the main image
+
+```C#
+        public MappingProfiles()
+        {
+            CreateMap<Activity, ActivityDto>();
+            CreateMap<UserActivity, AttendeeDto>()
+                .ForMember(d => d.Username, o => o.MapFrom(s => s.AppUser.UserName))
+                .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.AppUser.DisplayName))
+                .ForMember(d => d.Image, o => o.MapFrom(s => s.AppUser.Photos.FirstOrDefault(x => x.IsMain).Url));
+        }
+    }
+```
+
+
