@@ -2,10 +2,10 @@
   <div class="ui segment">
     <div class="ui items">
       <div class="item">
-        <div class="ui tiny image circular"><img src="findHost().image || ../../../assets/user.png" /></div>
+        <div class="ui tiny image circular" style="margin-bottom: 3px;"><img [src]="findHost().image || '../../../assets/user.png'" /></div>
         <div class="content">
           <a class="header" (click)="onViewClick(activity)">{{activity.title}}</a>
-          <div class="description">Hosted by {{findHost().displayName}}</div>
+          <div class="description">Hosted by <a routerLink="/profile/{{findHost().username}}">{{findHost().displayName}}</a></div>
           <div class="description" *ngIf="activity.isHost"><label class="ui label basic orange">You are hosting this activity</label></div>
           <div class="description" *ngIf="activity.isGoing && !activity.isHost"><label class="ui label basic green">You are going to this activity</label></div>
         </div>

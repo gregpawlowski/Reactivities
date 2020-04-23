@@ -12,7 +12,8 @@ const routes: Routes = [
     { path: '', component: HomeComponent },
   ]},
   { path: '', component: LoginLayoutComponent, children: [
-    { path: 'activities', canLoad: [AuthGuard], loadChildren: () => import('./activities/activities.module').then(m => m.ActivitiesModule) }
+    { path: 'activities', canLoad: [AuthGuard], loadChildren: () => import('./activities/activities.module').then(m => m.ActivitiesModule)},
+    { path: 'profile', canLoad: [AuthGuard], loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule)}
   ]},
   { path: '**', redirectTo: ''}
 ];

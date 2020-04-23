@@ -21,6 +21,10 @@ export class UserService {
     return this.store.value.user;
   }
 
+  set user(user: IUser) {
+    this.store.set('user', user);
+  }
+
   get user$() {
     return this.store.select<IUser>('user');
   }

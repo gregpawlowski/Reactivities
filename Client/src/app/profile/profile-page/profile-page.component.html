@@ -1,0 +1,8 @@
+<div class="ui grid" *ngIf="(profile$ | async) as profile">
+  <div class="sixteen wide column">
+    <app-profile-header [profile]="profile"></app-profile-header>
+  </div>
+  <div class="sixteen wide column">
+    <app-profile-content></app-profile-content>
+  </div>
+</div>

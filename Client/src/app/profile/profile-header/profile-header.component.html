@@ -1,0 +1,42 @@
+<div class="ui segment">
+  <div class="ui grid">
+
+    <div class="twelve wide column">
+      <div class="ui items">
+        <div class="item">
+          <div class="ui small avatar image">
+            <img [src]="profile.image || '../../../assets/user.png'" />
+          </div>
+          <div class="content middle aligned">
+            <h1 class="ui header">{{profile.displayName}}</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="four wide column">
+      <div class="ui statistics">
+        <div class="ui statistic">
+          <div class="value">5</div>
+          <div class="label">Followers</div>
+        </div>
+        <div class="ui statistic">
+          <div class="value">42</div>
+          <div class="label">Following</div>
+        </div>
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="ui move reveal">
+        <div class="ui visible content" style="width: 100%">
+          <button class="ui fluid button fluid teal">Following</button>
+        </div>
+        <div class="ui hidden content">
+          <button class="ui fluid basic red button">{{true ? 'Unfollow' : 'Follow'}}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -7,7 +7,7 @@
           <div class="content">
             <div class="ui huge header" style="color: white">{{activity.title}}</div>
             <p>{{activity.date | date:'EEEE MMMM d'}}</p>
-            <p>Hosted by {{findHost().displayName}}</p>
+            <p>Hosted by <a routerLink="/profile/{{findHost().username}}">{{findHost().displayName}}</a></p>
           </div>
         </div>
       </div>

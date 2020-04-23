@@ -5,6 +5,7 @@ import { distinctUntilChanged, pluck, filter, map, shareReplay } from 'rxjs/oper
 import { Injectable } from '@angular/core';
 import { IUser } from './shared/models/user';
 import { IActivity } from './shared/models/activity';
+import { IProfile } from './shared/models/profile';
 
 
 export interface State {
@@ -13,6 +14,7 @@ export interface State {
   loaderContent: string;
   activity: IActivity;
   user: IUser;
+  profile: IProfile;
 }
 
 const state: State = {
@@ -20,7 +22,8 @@ const state: State = {
   loading: false,
   activity: undefined,
   loaderContent: undefined,
-  user: undefined
+  user: undefined,
+  profile: undefined
 };
 
 @Injectable({

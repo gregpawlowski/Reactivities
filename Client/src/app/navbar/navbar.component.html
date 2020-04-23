@@ -13,7 +13,7 @@
       <div class="ui top left pointing dropdown" suiDropdown>
         {{user.displayName}}<i class="dropdown icon"></i>
         <div class="menu" suiDropdownMenu>
-            <div routerLink="/profile/username" class="item">
+            <div routerLink="/profile/{{user.username}}" class="item">
               <i class="user icon"></i>My Profile
             </div>
             <div class="item" (click)="onLogout()">

@@ -1,0 +1,31 @@
+<div class="ui grid">
+  <div class="four wide column">
+    <div class="ui teal sub header">Step 1 - Add Photo</div>
+    <div class="dropzone" ngx-dropzone (change)="onFileAdd($event)" multiple="false">
+      <ngx-dropzone-label><i class="upload icon huge"></i><div class="ui header">Drop image here</div></ngx-dropzone-label>
+    </div>
+  </div>
+  <div class="one wide column"></div>
+  <div class="four wide column">
+    <div class="ui teal sub header">Step 2 - Resize Image</div>
+    <image-cropper
+      [imageFile]="file"
+      maintainAspectRatio="true"
+      [aspectRatio]="1 / 1"
+      format="jpeg"
+      (imageCropped)="imageCropped($event)"
+    ></image-cropper>
+  </div>
+  <div class="one wide column"></div>
+  <div class="four wide column">
+    <div class="ui teal sub header">Step 3 - Preview & Upload</div>
+    <ng-container *ngIf="croppedFile">
+      <img class="ui image" [src]="croppedFile">
+      <div class="ui two buttons">
+        <button class="ui positive button icon" [ngClass]="{loading: uploadingPhoto}" (click)="uploadPhoto()"><i class="check icon"></i></button>
+        <button class="ui button icon" [disabled]="uploadingPhoto" (click)="cancelPhoto()"><i class="close icon"></i></button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
