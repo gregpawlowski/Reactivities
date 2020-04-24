@@ -27,7 +27,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     SuiMessageModule,
     SuiPopupModule,
     SuiTabsModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class SharedModule { }

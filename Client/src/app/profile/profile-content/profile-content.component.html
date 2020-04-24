@@ -1,7 +1,7 @@
 <sui-tabset>
   <div class="ui grid">
     <div class="twelve wide column">
-      <div class="ui segment bottom attached tab" suiTabContent="1" style="min-height: 100%;">About Content</div>
+      <div class="ui segment bottom attached tab" suiTabContent="1" style="min-height: 100%;"><app-profile-about></app-profile-about></div>
       <div class="ui segment bottom attached tab" suiTabContent="2" style="min-height: 100%;"><app-profile-photos></app-profile-photos></div>
       <div class="ui segment bottom attached tab" suiTabContent="3" style="min-height: 100%;">Activities Content</div>
       <div class="ui segment bottom attached tab" suiTabContent="4" style="min-height: 100%;">Followers Content</div>
@@ -10,7 +10,7 @@
     <div class="four wide column">
       <div class="ui vertical menu fluid">
           <a class="item" suiTabHeader="1">About</a>
-          <a class="item" suiTabHeader="2" [isActive]="true">Photos</a>
+          <a class="item" suiTabHeader="2">Photos</a>
           <a class="item" suiTabHeader="3">Activities</a>
           <a class="item" suiTabHeader="4">Followers</a>
           <a class="item" suiTabHeader="5">Following</a>

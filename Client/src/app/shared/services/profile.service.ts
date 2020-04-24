@@ -96,4 +96,17 @@ export class ProfileService {
         })
       );
   }
+
+  updateProfile(values: { displayName: string, bio: string }) {
+    return this.http.put(apiBase + 'profiles', values)
+      .pipe(
+        delay(1000),
+        tap(() => {
+          const currentProfile = this.profile;
+          this.profile = {...currentProfile, ...values};
+          const currentUser = this.userService.user;
+          this.userService.user = { ...currentUser, displayName: values.displayName };
+        })
+      );
+  }
 }

@@ -1,0 +1,14 @@
+<ng-container *ngIf="(profileService.profile$ | async) as profile">
+  <div class="ui grid">
+    <div class="sixteen wide column" style="padding-bottom: 0">
+      <div class="ui header left floated"><i aria-hidden="true" class="user icon"></i>About {{profile.displayName}}</div>
+      <button *ngIf="this.profileService.isCurrentUser()" class="ui basic button right floated" (click)="toggleEditMode()">{{editMode ? 'Cancel' : 'Edit Profile'}}</button>
+    </div>
+    <div class="sixteen wide column">
+      <app-profile-edit-form *ngIf="editMode; else showBio" (profileUpdated)="toggleEditMode()"></app-profile-edit-form>
+      <ng-template #showBio>
+        <p>{{profile.bio || profile.displayName + ' has not filled out a biography yet'}}</p>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>

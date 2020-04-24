@@ -10,7 +10,7 @@
         <div class="ui five cards">
           <div class="ui card" *ngFor="let photo of profile.photos">
             <img class="ui image" [src]="photo.url">
-            <div class="ui two fluid buttons">
+            <div class="ui two fluid buttons" *ngIf="profileService.isCurrentUser()">
               <button class="ui positive button" [ngClass]="{basic: !photo.isMain, loading: saving && saving.id === photo.id && saving.type === 'main'}" [disabled]="photo.isMain" (click)="setMain(photo)">Main</button>
               <button class="ui basic negative button" (click)="deletePhoto(photo)" [ngClass]="{loading: saving && saving.id === photo.id && saving.type === 'delete'}" [disabled]="photo.isMain"><i class="trash icon"></i></button>
             </div>

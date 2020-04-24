@@ -10,6 +10,8 @@ import { ProfilePhotosComponent } from './profile-photos/profile-photos.componen
 import { PhotoUploadWidgetComponent } from './photo-upload-widget/photo-upload-widget.component';
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { ImageCropperModule } from 'ngx-image-cropper';
+import { ProfileAboutComponent } from './profile-about/profile-about.component';
+import { ProfileEditFormComponent } from './profile-edit-form/profile-edit-form.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +19,9 @@ import { ImageCropperModule } from 'ngx-image-cropper';
     ProfileHeaderComponent,
     ProfileContentComponent,
     ProfilePhotosComponent,
-    PhotoUploadWidgetComponent
+    PhotoUploadWidgetComponent,
+    ProfileAboutComponent,
+    ProfileEditFormComponent
   ],
   imports: [
     NgxDropzoneModule,

@@ -1,0 +1,16 @@
+<form class="ui form" [formGroup]="profileEditForm" (ngSubmit)="handleSubmit()">
+      
+  <div class="field" [ngClass]="{error: displayName.invalid && (displayName.touched || displayName.dirty)}">
+    <input type="text" formControlName="displayName" placeholder="displayName">
+    <div class="ui pointing above prompt label" role="alert" aria-atomic="true" *ngIf="displayName.invalid && (displayName.dirty || displayName.touched) && displayName.errors.required">
+      Display name is required
+    </div>
+  </div>
+
+  <div class="field" [ngClass]="{error: bio.invalid && (bio.touched || bio.dirty)}">
+    <textarea formControlName="bio" placeholder="bio" rows="2"></textarea>
+  </div>
+
+  <button type="submit" class="ui positive button right floated" [ngClass]="{loading: saving}" [disabled]="profileEditForm.invalid">Update profile</button>
+
+</form>
