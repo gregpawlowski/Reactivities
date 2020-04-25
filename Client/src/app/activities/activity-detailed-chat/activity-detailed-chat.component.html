@@ -7,37 +7,26 @@
 <div class="ui attached segment">
   <div class="ui comments">
 
-    <div class="comment">
-      <div class="avatar">
-        <img src="../../../assets/user.png" alt="">
-      </div>
-      <div class="content">
-        <a class="author">Matt</a>
-        <div class="metadata">
-          <div>Today at 5:42PM</div>
+    <ng-container *ngIf="(activityService.activity$ | async) as activity">
+      <div class="comment" *ngFor="let comment of activity.comments">
+        <div class="avatar">
+          <img [src]="comment.image || '../../../assets/user.png'" alt="">
         </div>
-        <div class="text">How artistic!</div>
-        <div class="actions">Reply</div>
-      </div>
-    </div>
-
-    <div class="comment">
-      <div class="avatar">
-        <img src="../../../assets/user.png" alt="">
-      </div>
-      <div class="content">
-        <a class="author">Joe Henderson</a>
-        <div class="metadata">
-          <div>5 days ago</div>
+        <div class="content">
+          <a class="author" routerLink="/profile/{{comment.username}}">{{comment.displayName}}</a>
+          <div class="metadata">
+            <div>{{comment.createdAt | timeAgo}}</div>
+          </div>
+          <div class="text">{{comment.body}}</div>
         </div>
-        <div class="text">Dude, this is awesome. Thanks so much</div>
-        <div class="actions">Reply</div>
       </div>
-    </div>
+    </ng-container>
 
-    <form class="ui reply form">
-      <div class="field"><textarea rows="3"></textarea></div>
-      <button class="ui icon primary left labeled button">
+    <form class="ui reply form" #commentForm="ngForm" (ngSubmit)="submitComment(commentForm)">
+      <div class="field" [ngClass]="{error: body.invalid && (body.touched || body.dirty)}">
+        <textarea rows="2" [(ngModel)]="commentFormValues.body" #body="ngModel" name="body" placeholder="Add your comment"></textarea>
+      </div>
+      <button class="ui icon primary left labeled button" [ngClass]="{loading: loading}">
         <i aria-hidden="true" class="edit icon"></i>
         Add Reply
       </button>

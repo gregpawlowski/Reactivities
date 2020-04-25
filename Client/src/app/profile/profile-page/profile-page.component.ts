@@ -14,10 +14,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   constructor(private profileService: ProfileService, private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.username = this.route.snapshot.params.username;
-    this.profileService.getProfile(this.username)
-      .subscribe();
-
     this.route.params.subscribe(params => {
       this.profileService.getProfile(params.username)
         .subscribe();

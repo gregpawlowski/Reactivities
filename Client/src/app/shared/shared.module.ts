@@ -10,11 +10,12 @@ import { SuiDatepickerModule,
   SuiTabsModule
 } from 'ng2-semantic-ui';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TimeAgoPipe } from 'time-ago-pipe';
 
 
 
 @NgModule({
-  declarations: [ LoadingComponent ],
+  declarations: [ LoadingComponent, TimeAgoPipe],
   imports: [
     CommonModule,
   ],
@@ -28,7 +29,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     SuiPopupModule,
     SuiTabsModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TimeAgoPipe
   ]
 })
 export class SharedModule { }

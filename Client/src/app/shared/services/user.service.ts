@@ -7,7 +7,7 @@ import { Store } from '@store';
 import { LoadingService } from './loading.service';
 import { IUserFormValues, IUser } from '../models/user';
 
-const apiBase = environment.apiBase;
+const apiBase = environment.apiBaseUrl + 'api/';
 
 @Injectable({
   providedIn: 'root'

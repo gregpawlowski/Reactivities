@@ -10,7 +10,7 @@ import { catchError, tap, finalize, delay } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { throwError } from 'rxjs';
 
-const apiBase = environment.apiBase;
+const baseUrl = environment.apiBaseUrl + 'api/';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +23,7 @@ export class AttendanceService {
     const attendee = this.createAttendee(this.store.value.user);
     const activity = {...this.store.value.activity};
 
-    return this.http.post(apiBase + 'activities/' + id + '/attend', {})
+    return this.http.post(baseUrl + 'activities/' + id + '/attend', {})
       .pipe(
         delay(1000),
         tap(() => {
@@ -41,7 +41,7 @@ export class AttendanceService {
   cancelAttendance(id: string) {
     const activity = { ...this.store.value.activity };
 
-    return this.http.delete(apiBase + 'activities/' + id + '/attend')
+    return this.http.delete(baseUrl + 'activities/' + id + '/attend')
     .pipe(
       delay(1000),
       tap(() => {

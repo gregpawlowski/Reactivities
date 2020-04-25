@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using API.Middleware;
+using API.SignalR;
 using Application.Activities;
 using Application.Interfaces;
 using AutoMapper;
@@ -57,7 +58,7 @@ namespace API
             {
                 opt.AddPolicy("CorsPolicy", policy => 
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200");
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200").AllowCredentials();
                 });
             });
             
@@ -94,6 +95,24 @@ namespace API
                         ValidateAudience = false,
                         ValidateIssuer = false
                     };
+
+                    // Add an Event for when a jwt Toekn is recieved
+                    opt.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context => 
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            // Check if we have an access_token query string and the path we are sending to starts with "/chat".
+                            if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddScoped<IJwtGenerator, JwtGenerator>();
@@ -104,6 +123,9 @@ namespace API
             
             // Set up Automapper and tell it which Assembly to look for AutoMapper profiles.
             services.AddAutoMapper(typeof(List.Handler));
+
+            // We need more then the essential services.
+            services.AddSignalR();
 
             // Strongly type our Cloudinary Settings based on the class. 
             // Settings are saved in user-secrets "Cloudinary" section.
@@ -133,6 +155,8 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                // Every request that goes to /chat will go to the ChatHub.
+                endpoints.MapHub<ChatHub>("/chat");
             });
         }
     }

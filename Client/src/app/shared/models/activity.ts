@@ -1,4 +1,5 @@
 import { IAttendee } from './attendee';
+import { IComment } from './comment';
 
 export interface IActivity {
   id: string;
@@ -11,4 +12,5 @@ export interface IActivity {
   attendees?: IAttendee[];
   isHost?: boolean;
   isGoing?: boolean;
+  comments?: IComment[];
 }

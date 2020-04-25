@@ -1581,3 +1581,455 @@ Update mapping profile to return the main image
 ```
 
 
+# Signal R
+Allows clients to recieve real time updates.
+* Adds real-time web fucntionaly to apps.
+* Connected clients recieve constent instantly
+* Ideal for:
+* * Chat Apps
+* * Dashboards
+* * Monitoring
+
+Here I'll be using it for chat app.
+
+* Transports
+* * WebSockets
+* * Server-Sent Events
+* * Long Polling
+
+Typically WebSockets are used.
+
+
+You create a Hub and Clients make connections. Instead of an API endpoint, you create a hub.
+
+
+Client sends comment up to Hub => Hub sends responses (Dto) down to All clients.
+
+## ASPNET Core SignalR (Server Side)
+
+### Adding Comment Entitiy
+We need the comment and they will be a one to many relationship with Acitvities.
+
+```C# Comment.cs
+using System;
+
+namespace Domain
+{
+    public class Comment
+    {
+        public Guid Id { get; set; }
+        public string Body { get; set; }
+        public virtual AppUser Author { get; set; }
+        public virtual Activity Activity { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}
+```
+
+And we want to add it as a one to many relationship to Acitvities
+```C#
+public virtual ICollection<Comment> Comments { get; set; }
+```
+
+### Create a CommendDto
+WE don't want to send back all the data back, Dto will be the shaped data returned to the client
+
+```C#
+using System;
+
+namespace Application.Comments
+{
+    public class CommentDto
+    {
+        public Guid Id { get; set; }
+        public string Body { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Username { get; set; }
+        public string DisplayName { get; set; }
+        public string Image { get; set; }
+    }
+}
+```
+We'll need to cretae a mapping for the three new properties we're bringing in.
+We'll use AutoMapper so we need an AutoMapper Profile
+
+```C#
+using System.Linq;
+using AutoMapper;
+using Domain;
+
+namespace Application.Comments
+{
+  public class MappingProfile : Profile
+  {
+    public MappingProfile()
+    {
+        CreateMap<Comment, CommentDto>()
+            .ForMember(d => d.Username, opt => opt.MapFrom(s => s.Author.UserName))
+            .ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.Author.DisplayName))
+            .ForMember(d => d.Image, opt => opt.MapFrom(s => s.Author.Photos.FirstOrDefault(x => x.IsMain).Url));
+    }
+  }
+}
+```
+
+And we want the comments to be returned with the Acitvity. They are already set up as virtual poperties for EF Model but we have to add it to the AcitivyDto.
+
+```C#
+        public ICollection<CommentDto> Comments { get; set; }
+```
+
+### Set Up Create Handler to add Comments
+The handler will have to return a Comment becuaes it will be sent down to all clients. 
+The handler will not be aclled by a Http Request so the User will not be able to be gotten form the Http Context. We'll have to pass it to the handler.
+
+```C#
+using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Errors;
+using AutoMapper;
+using Domain;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Comments
+{
+  public class Create
+  {
+    public class Command : IRequest<CommentDto>
+    {
+      public string Body { get; set; }
+      public Guid ActivityId { get; set; }
+      public string Username { get; set; }
+    }
+
+    public class Handler : IRequestHandler<Command, CommentDto>
+    {
+      private readonly DataContext _context;
+      private readonly IMapper _mapper;
+      public Handler(DataContext context, IMapper mapper)
+      {
+        _mapper = mapper;
+        _context = context;
+      }
+      public async Task<CommentDto> Handle(Command request, CancellationToken cancellationToken)
+      {
+        // handler logic
+        var activity = await _context.Activities.FindAsync(request.ActivityId);
+
+        if (activity == null)
+            throw new RestException(HttpStatusCode.NotFound, new { Activity = "Not Found"});
+
+        var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == request.Username);
+
+        var comment = new Comment {
+            Author = user,
+            Activity = activity,
+            Body = request.Body,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        activity.Comments.Add(comment);
+
+        var success = await _context.SaveChangesAsync() > 0;
+
+        if (success) return _mapper.Map<CommentDto>(comment);
+
+        throw new Exception("Problem saving changes");
+      }
+    }
+  }
+}
+```
+
+### Adding A Signal R Hub
+* Add Signal R As a Service
+
+```C# Startup
+            // We need more then the essential services.
+            services.AddSignalR();
+```
+
+* Add new endpoint for Singal R
+```C# Startup
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                // Every request that goes to /chat will go to the ChatHub.
+                endpoints.MapHub<ChatHub>("/chat");
+            });
+```
+
+ChatHub will be created in the API project because essentailly it is similar to an API controller
+```C#
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Application.Comments;
+using MediatR;
+using Microsoft.AspNetCore.SignalR;
+
+namespace API.SignalR
+{
+  public class ChatHub : Hub
+  {
+    private readonly IMediator _mediator;
+    public ChatHub(IMediator mediator)
+    {
+      _mediator = mediator;
+    }
+
+    // SignalR Method Name matters, it will be used from the client side to envoke the method.
+    public async Task SendComment(Create.Command command) 
+    {
+        // Use HubContext to get Username, this is derived from Hub.
+        var username = Context.User?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        command.Username = username;
+
+        // Send the commetn through mediator, mediator will return the comment Dto
+        var comment = await _mediator.Send(command);
+
+        // Send comment to all clients
+        await Clients.All.SendAsync("RecieveComment", comment);
+    }
+  }
+}
+```
+### Configuring Auth For SignalR
+Above we are using Context to get the UserClaims but right now that doesn't exist in Hub Context, we have to configure it.
+
+Here we need to add a custom Event. Whenever a request is made, instead of looking for the Auth header as it's done by default, we will look to see if the access token is sent in the query. 
+```C#
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt => 
+                {
+                    // Tell the API what to validate when we recieve a token.
+                    opt.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        // Validate they key signature.
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = key,
+                        // Don't validate the URL for now
+                        ValidateAudience = false,
+                        ValidateIssuer = false
+                    };
+
+                    // Add an Event for when a jwt Toekn is recieved
+                    opt.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context => 
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            // Check if we have an access_token query string and the path we are sending to starts with "/chat".
+                            if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+```
+
+### CORS for SignalR
+SingnalR client sends Credentials in header we need to allow that. This is different from our other HTTP requests.
+``` C#
+          services.AddCors(opt => 
+            {
+                opt.AddPolicy("CorsPolicy", policy => 
+                {
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200").AllowCredentials();
+                });
+            });
+```
+## @aspnet/signal4 (Client Side)
+
+### Create a Service that will open connection
+
+This is the comment service, I'll be using this to start a connection to the chat hub and to send up a new comment.
+
+After the connection is started we will listen to the RecieveComment event and add the comment to the activity once it's recieved.
+
+```ts
+import { Injectable } from '@angular/core';
+import { environment } from 'src/environments/environment';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { UserService } from './user.service';
+import { ActivityService } from './activity.service';
+import { IComment } from '../models/comment';
+import { HttpClient } from '@angular/common/http';
+
+const apiBase = environment.apiBaseUrl;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CommentService {
+
+  constructor(private userService: UserService, private activityService: ActivityService, private http: HttpClient) { }
+
+  private hubConnection: HubConnection;
+
+  startConnection() {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(apiBase + 'chat', {
+        accessTokenFactory: () => this.userService.user.token
+      })
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    this.hubConnection
+      .start()
+      .then(() => console.log(this.hubConnection.state))
+      .catch(err => console.log('Error while starting connection: ' + err));
+
+    // Has to match the evetn sent by the Hub from ASP.NET
+    this.hubConnection.on('RecieveComment', (comment: IComment) => {
+      const currentActivity = {...this.activityService.activity};
+      currentActivity.comments.push(comment);
+      this.activityService.activity = currentActivity;
+    });
+  }
+
+  stopConnection() {
+    this.hubConnection.stop();
+  }
+
+  async addComment(values: IComment & { activityId: string }) {
+    values.activityId = this.activityService.activity.id;
+
+    try {
+      this.hubConnection.invoke('SendComment', values);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+```
+
+## Set up the component
+The component will start the connection and t
+```ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommentService } from 'src/app/shared/services/comment.service';
+import { ActivityService } from 'src/app/shared/services/activity.service';
+import { NgForm } from '@angular/forms';
+
+@Component({
+  selector: 'app-activity-detailed-chat',
+  templateUrl: './activity-detailed-chat.component.html',
+  styleUrls: ['./activity-detailed-chat.component.scss']
+})
+export class ActivityDetailedChatComponent implements OnInit, OnDestroy {
+
+  constructor(private commentService: CommentService, public activityService: ActivityService) { }
+
+  commentFormValues = {
+    body: ''
+  };
+  loading = false;
+
+  ngOnInit() {
+    this.commentService.startConnection();
+  }
+
+  ngOnDestroy() {
+    this.commentService.stopConnection();
+  }
+
+  async submitComment(form: NgForm) {
+    this.loading = true;
+
+    try {
+      await this.commentService.addComment(form.value);
+      this.loading = false;
+      form.reset();
+    } catch (error) {
+      this.loading = false;
+    }
+  }
+}
+
+```
+### SignalR Groups
+Right now the comments are pushed to anyone who has a connection.
+We'll have to create a group.
+
+### Adding SignalR Gorups to API
+Here we'll add a user to a group as soon as he joins, then when sending down a comment we'll onlyu send it to the gorup with that activiyId as the group name.
+```C#
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Application.Comments;
+using MediatR;
+using Microsoft.AspNetCore.SignalR;
+
+namespace API.SignalR
+{
+  public class ChatHub : Hub
+  {
+    private readonly IMediator _mediator;
+    public ChatHub(IMediator mediator)
+    {
+      _mediator = mediator;
+    }
+
+    // SignalR Method Name matters, it will be used from the client side to envoke the method.
+    public async Task SendComment(Create.Command command)
+    {
+      string username = GetUsername();
+
+      command.Username = username;
+
+      // Send the commetn through mediator, mediator will return the comment Dto
+      var comment = await _mediator.Send(command);
+
+      // Send comment to all clients
+      // await Clients.All.SendAsync("RecieveComment", comment);
+
+      await Clients.Group(command.ActivityId.ToString()).SendAsync("RecieveComment", comment);
+    }
+
+    private string GetUsername()
+    {
+      // Use HubContext to get Username, this is derived from Hub.
+      return Context.User?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+    }
+
+    // This method will be used right away when a connection is made, it'll add this client to a group
+    // In this case the groupName will be the activityId.
+    public async Task AddToGroup(string groupName)
+    {
+      await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+      var username = GetUsername();
+
+      await Clients.Group(groupName).SendAsync("Send", $"{username} has joined the group");
+    }
+
+    public async Task RemoveFromGroup(string groupName)
+    {
+      await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+      var username = GetUsername();
+
+      await Clients.Group(groupName).SendAsync("Send", $"{username} has left the group");
+    }
+
+
+  }
+}
+```
+
+### Client Group Settings for SignalR
+We'll have to make the necessary adjustments on the client.
+

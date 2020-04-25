@@ -9,7 +9,7 @@ import { IActivity } from '../models/activity';
 import { IUser } from '../models/user';
 import { AttendanceService } from './attendance.service';
 
-const apiBase = environment.apiBase;
+const baseUrl = environment.apiBaseUrl + 'api/';
 
 @Injectable({
   providedIn: 'root'
@@ -23,11 +23,23 @@ export class ActivityService {
     private attendanceService: AttendanceService
   ) { }
 
+  get activity() {
+    return this.store.value.activity;
+  }
+
+  set activity(value: IActivity) {
+    this.store.set('activity', value);
+  }
+
+  get activity$() {
+    return this.store.select<IActivity>('activity');
+  }
+
   getActivities() {
     this.loadingService.startLoading('Loading Activities');
     const user = this.store.value.user;
 
-    return this.http.get<IActivity[]>(apiBase + 'activities')
+    return this.http.get<IActivity[]>(baseUrl + 'activities')
       .pipe(
         delay(1000),
         map(activites => activites.map(activity => this.setActivityProps(activity, user))),
@@ -54,7 +66,7 @@ export class ActivityService {
     } else {
       this.loadingService.startLoading('Loading Activity');
       const user = this.store.value.user;
-      return this.http.get<IActivity>(apiBase + 'activities/' + id)
+      return this.http.get<IActivity>(baseUrl + 'activities/' + id)
         .pipe(
           delay(1000),
           map(activity => this.setActivityProps(activity, user)),
@@ -71,7 +83,7 @@ export class ActivityService {
   }
 
   createActivity(activity: IActivity) {
-    return this.http.post(apiBase + 'activities', activity)
+    return this.http.post(baseUrl + 'activities', activity)
       .pipe(
         delay(1000),
         tap(() => {
@@ -79,6 +91,7 @@ export class ActivityService {
           attendee.isHost = true;
           activity.attendees = [attendee];
           activity.isHost = true;
+          activity.comments = [];
 
           if (this.store.value.activities) {
             this.store.set('activities', [...this.store.value.activities, activity]);
@@ -90,7 +103,7 @@ export class ActivityService {
   }
 
   updateActivity(activity: IActivity) {
-    return this.http.put(apiBase + 'activities/' + activity.id, activity)
+    return this.http.put(baseUrl + 'activities/' + activity.id, activity)
       .pipe(
         delay(1000),
         tap(() => {
@@ -103,7 +116,7 @@ export class ActivityService {
   }
 
   deleteActivity(id: string) {
-    return this.http.delete(apiBase + 'activities/' + id)
+    return this.http.delete(baseUrl + 'activities/' + id)
       .pipe(
         delay(1000),
         tap(() => {

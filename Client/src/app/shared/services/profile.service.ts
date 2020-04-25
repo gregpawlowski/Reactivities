@@ -7,7 +7,7 @@ import { tap, finalize, catchError, delay } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
 import { UserService } from './user.service';
 
-const apiBase = environment.apiBase;
+const baseURL = environment.apiBaseUrl + 'api/';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +31,7 @@ export class ProfileService {
   getProfile(username) {
     this.loadingService.startLoading('Loading profile...');
 
-    return this.http.get<IProfile>(apiBase + 'profiles/' + username)
+    return this.http.get<IProfile>(baseURL + 'profiles/' + username)
       .pipe(
         delay(1000),
         tap(profile => this.store.set('profile', profile)),
@@ -48,7 +48,7 @@ export class ProfileService {
     const uploadData = new FormData();
     uploadData.append('File', file);
 
-    return this.http.post<IPhoto>(apiBase + 'photos', uploadData)
+    return this.http.post<IPhoto>(baseURL + 'photos', uploadData)
       .pipe(
         tap(photoFromApi => {
           const profile = this.profile;
@@ -63,7 +63,7 @@ export class ProfileService {
   }
 
   setMainPhoto(photo: IPhoto) {
-    return this.http.post(apiBase + 'photos/' + photo.id + '/setMain', {})
+    return this.http.post(baseURL + 'photos/' + photo.id + '/setMain', {})
       .pipe(
         delay(1000),
         tap(() => {
@@ -87,7 +87,7 @@ export class ProfileService {
   }
 
   deletePhoto(photo: IPhoto) {
-    return this.http.delete(apiBase + 'photos/' + photo.id)
+    return this.http.delete(baseURL + 'photos/' + photo.id)
       .pipe(
         delay(1000),
         tap(() => {
@@ -98,7 +98,7 @@ export class ProfileService {
   }
 
   updateProfile(values: { displayName: string, bio: string }) {
-    return this.http.put(apiBase + 'profiles', values)
+    return this.http.put(baseURL + 'profiles', values)
       .pipe(
         delay(1000),
         tap(() => {
