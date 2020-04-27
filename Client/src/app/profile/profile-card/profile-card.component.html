@@ -1,0 +1,7 @@
+<img [src]="profile.image || '../../../assets/user.png'" class="ui image">
+<div class="content">
+  <div class="header"><a routerLink="/profile/{{profile.username}}">{{profile.displayName}}</a></div>
+</div>
+<div class="extra content">
+  <i class="user icon"></i>{{profile.followersCount}} Followers
+</div>

@@ -19,7 +19,7 @@
   <div class="ui segment secondary">
     <div role="list" class="ui horizontal list">
       <div role="listitem" class="item" *ngFor="let attendee of activity.attendees">
-          <img [src]="attendee.image || '/assets/user.png'" class="ui avatar image" suiPopup [popupText]="attendee.displayName"/>
+          <img [src]="attendee.image || '/assets/user.png'" class="ui avatar image" suiPopup [popupText]="attendee.displayName" [ngClass]="{following: attendee.following}"/>
       </div>
     </div>
   </div>

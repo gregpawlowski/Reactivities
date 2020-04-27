@@ -2033,3 +2033,386 @@ namespace API.SignalR
 ### Client Group Settings for SignalR
 We'll have to make the necessary adjustments on the client.
 
+
+# Follower / Following Feature
+
+## Self Referencing Many-To-Many
+The entitiy will be used to both getting followers and followees. AppUser will be able to follow many other AppUsers and be followed by many AppUsers.
+
+```C#
+namespace Domain
+{
+    public class UserFollowing
+    {
+        public string ObserverId { get; set; }
+        public virtual AppUser Observer { get; set; }
+        public string TargetId { get; set; }
+        public virtual AppUser Target { get; set;}
+    }
+}
+```
+
+We can add these to AppUser as collections so that there is a navigation property
+
+```C#
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+
+namespace Domain
+{
+    public class AppUser : IdentityUser
+    {
+        public string DisplayName { get; set; }
+        public string Bio { get; set; }
+        public virtual ICollection<UserActivity> UserActivites { get; set; }
+        public virtual ICollection<Photo> Photos { get; set; }
+        public ICollection<UserFollowing> Followings { get; set; }
+        public ICollection<UserFollowing> Followers { get; set; }
+    }
+}
+```
+Now that we are specifing the same Collection in the AppUser, we need to configure the relationship in FluentAPI
+
+```C#
+builder.Entity<UserFollowing>(builder => 
+{
+    builder.HasKey(k => new { k.ObserverId, k.TargetId });
+
+    builder.HasOne(o => o.Observer)
+        .WithMany(a => a.Followings)
+        .HasForeignKey(o => o.ObserverId)
+        .OnDelete(DeleteBehavior.Restrict);
+    
+    builder.HasOne(o => o.Target)
+        .WithMany(a => a.Followers)
+        .HasForeignKey(o => o.TargetId)
+        .OnDelete(DeleteBehavior.Restrict);
+});
+```
+
+## Add Handers
+
+
+## Create Controller
+```C#
+using System.Threading.Tasks;
+using Application.Followers;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers
+{
+    [Route("api/profiles")]
+    public class FollowersController : BaseController
+    {
+        [HttpPost("{username}/follow")]
+        public async Task<ActionResult<Unit>> Follow(string username)
+        {
+            return await Mediator.Send(new Add.Command{ Username = username});
+        }
+
+        [HttpDelete("{username}/follow")]
+        public async Task<ActionResult<Unit>> Unfollow(string username)
+        {
+            return await Mediator.Send(new Delete.Command{ Username = username});
+        }
+        
+    }
+}
+```
+
+## Pass following and follower into profile 
+We want to return it more than the details method.
+
+
+New interface and class to go and get the user's profile anywher in our app logic.
+
+In Profiles feature create a new interface.
+```C#
+using System.Threading.Tasks;
+
+namespace Application.Profiles
+{
+    public interface IProfileReader
+    {
+        Task<Profile> ReadProfile(string username);
+    }
+}
+```
+
+We will add a concrete implementation in the same folder
+
+Have to also modify the Domain Entity
+We want to return if the user is followed by the current user logged in
+As well as the count of follwers and following this profile has.
+```C#
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Domain;
+
+namespace Application.Profiles
+{
+    public class Profile
+    {
+        public string DisplayName { get; set; }
+        public string Username { get; set; }
+        public string Image { get; set; }
+        public string Bio { get; set; }
+
+        [JsonPropertyName("following")]
+        public bool IsFollowed { get; set; }
+        public int FollowersCount { get; set; }
+        public int FollowingCount { get; set; }
+        public ICollection<Photo> Photos { get; set; }
+    }
+}
+```
+
+Now for the concrete implementation of the ReadProfile
+```C#
+    public async Task<Profile> ReadProfile(string username)
+    {
+      var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == username);
+
+      if (user == null)
+        throw new RestException(HttpStatusCode.NotFound, new { User = "Not Found" });
+
+      var currentUser = await _context.Users.SingleOrDefaultAsync(u => u.UserName == _userAccessor.GetCurrentUsername());
+
+      var profile = new Profile
+      {
+        DisplayName = user.DisplayName,
+        Username = user.UserName,
+        Image = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+        Photos = user.Photos,
+        Bio = user.Bio,
+        FollowersCount = user.Followers.Count,
+        FollowingCount = user.Followings.Count,
+      };
+
+      if (currentUser.Followings.Any(u => u.TargetId == user.Id))
+      {
+        profile.IsFollowed = true;
+      }
+      else
+      {
+        profile.IsFollowed = false;
+      }
+
+      return profile;
+    }
+  }
+```
+
+##  Add profile reader into Startup 
+We want this profile reader to be injectable we have to add it to services.
+
+```C#
+            services.AddScoped<IProfileReader, ProfileReader>();
+```
+
+## Now we can use it inside our Application Handlers
+In the Details.cs class we can use our Reader, removing most of the implementation.
+```C# Details.cs 
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Errors;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Profiles
+{
+  public class Details
+  {
+    public class Query : IRequest<Profile>
+    {
+      public string Username { get; set; }
+    }
+
+    public class Handler : IRequestHandler<Query, Profile>
+    {
+      private readonly DataContext _context;
+      private readonly IProfileReader _profileReader;
+      public Handler(DataContext context, IProfileReader profileReader)
+      {
+        _profileReader = profileReader;
+        _context = context;
+      }
+      public async Task<Profile> Handle(Query request, CancellationToken cancellationToken)
+      {
+        // var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == request.Username);
+
+        // if (user == null)
+        //   throw new RestException(HttpStatusCode.NotFound, new { User = $"User {request.Username} not found" });
+
+        // return new Profile
+        // {
+        //   DisplayName = user.DisplayName,
+        //   Username = user.UserName,
+        //   Image = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+        //   Photos = user.Photos,
+        //   Bio = user.Bio
+        // };
+
+        return await _profileReader.ReadProfile(request.Username);
+
+      }
+    }
+  }
+}
+```
+
+## Getting a list of Followings for a user
+This handler will build up a list of profiles to return with their follower and following counts as well as if this user is currently following them.
+
+```C#
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Profiles;
+using Domain;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Followers
+{
+  public class List
+  {
+    public class Query : IRequest<List<Profile>>
+    {
+      public string Username { get; set; }
+      public string Predicate { get; set; }
+    }
+
+    public class Handler : IRequestHandler<Query, List<Profile>>
+    {
+      private readonly DataContext _context;
+      private readonly IProfileReader _profileReader;
+      public Handler(DataContext context, IProfileReader profileReader)
+      {
+        _profileReader = profileReader;
+        _context = context;
+      }
+      public async Task<List<Profile>> Handle(Query request, CancellationToken cancellationToken)
+      {
+        var queryable = _context.Followings.AsQueryable();
+
+        var userFollowings = new List<UserFollowing>();
+
+        var profiles = new List<Profile>();
+
+        switch (request.Predicate)
+        {
+          case "followers":
+            {
+              userFollowings = await queryable.Where(x => x.Target.UserName == request.Username).ToListAsync();
+              foreach (var follower in userFollowings)
+              {
+                profiles.Add(await _profileReader.ReadProfile(follower.Observer.UserName));
+              }
+            }
+            break;
+          case "following":
+            {
+              userFollowings = await queryable.Where(x => x.Observer.UserName == request.Username).ToListAsync();
+              foreach (var follower in userFollowings)
+              {
+                profiles.Add(await _profileReader.ReadProfile(follower.Target.UserName));
+              }
+            }
+            break;
+        }
+
+        return profiles;
+      }
+    }
+  }
+}
+```
+
+## Controller
+Now we can set up the controller to get the profiles:
+```C#
+  [HttpGet("{username}/follow")]
+  public async Task<ActionResult<List<Profile>>> GetFollowings([FromQuery] string predicate, [FromRoute] string username)
+  {
+      return await Mediator.Send(new List.Query{Predicate = predicate, Username = username});
+  }
+```
+
+## Adding a Custom Value Resolver
+In the Activites, in the attendee information, we want to add if the currently logged in user is follwing this user.
+
+We want to add a IsFollowing propety to the list of Activites.
+Since we are usig AutoMapper we'll have to configure it.
+
+Add it to the Dto first:
+
+```C#
+namespace Application.Activities
+{
+    public class AttendeeDto
+    {
+        public string Username { get; set; }
+        public string DisplayName { get; set; }
+        public string Image { get; set; }
+        public bool IsHost { get; set; }
+        // Add this propety below
+        public bool Following { get; set; }
+    }
+}
+```
+Our Attendee Dto is mapped by AutoMapper so we're going to have to configure it...
+But we cannot simply add a profile becuase we have no access to the currently logged in user, nor can we inject it to AutoMapper
+
+What we can do is create a Value Resolver...
+
+```C# FollowingResolver.cs
+using System.Linq;
+using Application.Interfaces;
+using AutoMapper;
+using Domain;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace Application.Activities
+{
+  // Takes three values, the mapping from, mappting to and the type the value will resolve to.
+  public class FollowingResolver : IValueResolver<UserActivity, AttendeeDto, bool>
+  {
+    private readonly IUserAccessor _userAccessor;
+    private readonly DataContext _context;
+    public FollowingResolver(IUserAccessor userAccessor, DataContext context)
+    {
+      _context = context;
+      _userAccessor = userAccessor;
+
+    }
+
+    // Cant make this method async so we'll need to use Result.
+    public bool Resolve(UserActivity source, AttendeeDto destination, bool destMember, ResolutionContext context)
+    {
+        var currentUser = _context.Users.SingleOrDefaultAsync(x => x.UserName == _userAccessor.GetCurrentUsername()).Result;
+
+        if (currentUser.Followings.Any(x => x.TargetId == source.AppUserId))
+            return true;
+        
+        return false;
+    }
+  }
+}
+```
+
+Now to use this resolve we can add it to the Mapping Profile:
+```C#
+          .ForMember(d => d.Following, o => o.MapFrom<FollowingResolver>());
+```
+
+
+
+# Paging, Sorting and Filtering

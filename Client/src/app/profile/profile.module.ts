@@ -12,6 +12,8 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
 import { ImageCropperModule } from 'ngx-image-cropper';
 import { ProfileAboutComponent } from './profile-about/profile-about.component';
 import { ProfileEditFormComponent } from './profile-edit-form/profile-edit-form.component';
+import { ProfileFollowingsComponent } from './profile-followings/profile-followings.component';
+import { ProfileCardComponent } from './profile-card/profile-card.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +23,9 @@ import { ProfileEditFormComponent } from './profile-edit-form/profile-edit-form.
     ProfilePhotosComponent,
     PhotoUploadWidgetComponent,
     ProfileAboutComponent,
-    ProfileEditFormComponent
+    ProfileEditFormComponent,
+    ProfileFollowingsComponent,
+    ProfileCardComponent
   ],
   imports: [
     NgxDropzoneModule,

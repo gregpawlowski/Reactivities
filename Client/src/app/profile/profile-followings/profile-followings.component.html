@@ -1,0 +1,16 @@
+<div class="ui grid">
+  <div class="sixteen wide column">
+    <div class="ui header left floated" *ngIf="type === 'following';else followers">
+      <i aria-hidden="true" class="user icon"></i>{{profile.displayName}} is following {{profile.followingCount}} people
+    </div>
+  </div>
+</div>
+<div class="sixteen wide column">
+  <div class="ui five cards">
+    <div class="ui card" *ngFor="let following of followings" [profile]="following" appProfileCard></div>
+  </div>
+</div>
+
+<ng-template #followers>
+  <div class="ui header left floated"><i aria-hidden="true" class="user icon"></i>{{profile.followersCount}} people following {{profile.displayName}}</div>
+</ng-template>

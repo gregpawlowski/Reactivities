@@ -17,23 +17,23 @@
     <div class="four wide column">
       <div class="ui statistics">
         <div class="ui statistic">
-          <div class="value">5</div>
+          <div class="value">{{profile.followersCount}}</div>
           <div class="label">Followers</div>
         </div>
         <div class="ui statistic">
-          <div class="value">42</div>
+          <div class="value">{{profile.followingCount}}</div>
           <div class="label">Following</div>
         </div>
       </div>
 
       <div class="ui divider"></div>
 
-      <div class="ui move reveal">
+      <div class="ui move reveal" *ngIf="!profileService.isCurrentUser()">
         <div class="ui visible content" style="width: 100%">
-          <button class="ui fluid button fluid teal">Following</button>
+          <button class="ui fluid button fluid teal">{{profile.following ? 'Following' : 'Not following'}}</button>
         </div>
         <div class="ui hidden content">
-          <button class="ui fluid basic red button">{{true ? 'Unfollow' : 'Follow'}}</button>
+          <button class="ui fluid basic button" [ngClass]="{red: profile.following, positive: !profile.following, loading: loading}" (click)="onFollowingClick(profile.following ? 'unfollow' : 'follow', profile.username)">{{profile.following ? 'Unfollow' : 'Follow'}}</button>
         </div>
       </div>
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { IProfile, IPhoto } from '../models/profile';
 import { Store } from '@store';
 import { tap, finalize, catchError, delay } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
 import { UserService } from './user.service';
+import { ToastrService } from 'ngx-toastr';
 
 const baseURL = environment.apiBaseUrl + 'api/';
 
@@ -14,7 +15,13 @@ const baseURL = environment.apiBaseUrl + 'api/';
 })
 export class ProfileService {
 
-  constructor(private http: HttpClient, private store: Store, private loadingService: LoadingService, private userService: UserService) { }
+  constructor(
+    private http: HttpClient,
+    private store: Store,
+    private loadingService: LoadingService,
+    private userService: UserService,
+    private toastr: ToastrService
+  ) { }
 
   get profile$() {
     return this.store.select<IProfile>('profile');
@@ -108,5 +115,49 @@ export class ProfileService {
           this.userService.user = { ...currentUser, displayName: values.displayName };
         })
       );
+  }
+
+  unFollowUser(username: string) {
+    return this.http.delete(baseURL + 'profiles/' + username + '/follow')
+      .pipe(
+        delay(1000),
+        tap(() => {
+          const currentProfile = {...this.profile};
+          currentProfile.following = false;
+          currentProfile.followersCount -= 1;
+
+          this.profile = currentProfile;
+        }),
+        catchError((error) => {
+          this.toastr.error('Problem following user');
+          return error;
+        })
+      );
+  }
+
+  followUser(username: string) {
+    return this.http.post(baseURL + 'profiles/' + username + '/follow', {})
+      .pipe(
+        delay(1000),
+        tap(() => {
+          const currentProfile = {...this.profile};
+          currentProfile.following = true;
+          currentProfile.followersCount += 1;
+
+          this.profile = currentProfile;
+        }),
+        catchError((error) => {
+          this.toastr.error('Problem following user');
+          return error;
+        })
+      );
+  }
+
+  getFollowingList(predicate: string, username: string) {
+    let params = new HttpParams();
+    params = params.set('predicate', predicate);
+
+    return this.http.get<IProfile[]>(baseURL + 'profiles/' + username + '/follow', {params})
+      .pipe(delay(1000));
   }
 }

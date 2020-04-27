@@ -10,7 +10,7 @@
       <img  class="ui tiny image" [src]="attendee.image || '../../../assets/user.png'" alt="">
       <div class="content center aligned">
         <h3 class="header"><a routerLink="/profile/{{attendee.username}}">{{attendee.displayName}}</a></h3>
-        <div class="extra" style="color: orange">Following</div>
+        <div class="extra" style="color: orange" *ngIf="attendee.following">Following</div>
       </div>
     </div>
 
