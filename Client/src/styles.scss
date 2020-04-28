@@ -1,3 +1,4 @@
+@import '@angular/material/prebuilt-themes/deeppurple-amber.css';
 /* You can add global styles to this file, and also import other style files */
 body {
   background-color: rgb(234, 234, 234);
@@ -6,3 +7,18 @@ body {
 
 // regular style toast 
 @import '~ngx-toastr/toastr';
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.mat-calendar-header {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.mat-calendar-controls {
+  margin: 0 !important;
+}
+
+.mat-calendar-body-selected {
+  background-color: #00b5ad !important;
+}

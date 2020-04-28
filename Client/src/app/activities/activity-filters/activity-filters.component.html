@@ -1,0 +1,13 @@
+
+<div class="ui large fluid vertical menu" style="margin-top: 50px;">
+  <div class="ui teal attached header"><i class="filter icon"></i>Filters</div>
+  <a class="blue item" [ngClass]="{active: !predicate.isGoing && !predicate.isHost}" (click)="predicateChange('all')">All Activities</a>
+  <a class="blue item" [ngClass]="{active: predicate.isGoing && !predicate.isHost}" (click)="predicateChange('isGoing')">I'm Going</a>
+  <a class="blue item" [ngClass]="{active: predicate.isHost && !predicate.isGoing}" (click)="predicateChange('isHost')">I'm Hosting</a>
+</div>
+
+<div class="ui teal attached header"><i class="calendar icon"></i>Select Date</div>
+<div class="ui attached segment">
+  <mat-calendar #calendar [(selected)]="predicate.startDate" (selectedChange)="dateChanged()">
+  </mat-calendar>
+</div>

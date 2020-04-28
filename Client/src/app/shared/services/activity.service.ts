@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { tap, distinctUntilChanged, map, delay, filter, catchError, shareReplay } from 'rxjs/operators';
+import { tap, distinctUntilChanged, map, delay, filter, catchError, shareReplay, pluck } from 'rxjs/operators';
 import { Store } from '@store';
 import { LoadingService } from './loading.service';
 import { IActivity } from '../models/activity';
@@ -10,6 +10,20 @@ import { IUser } from '../models/user';
 import { AttendanceService } from './attendance.service';
 
 const baseUrl = environment.apiBaseUrl + 'api/';
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  count: number;
+  totalPages: number;
+}
+
+const defaultPagination = {
+    page: 0,
+    count: undefined,
+    totalPages: undefined,
+    limit: 3
+};
 
 @Injectable({
   providedIn: 'root'
@@ -35,23 +49,67 @@ export class ActivityService {
     return this.store.select<IActivity>('activity');
   }
 
+  set activities(value: IActivity[]) {
+    this.store.set('activities', value);
+  }
+
+  pagination = new BehaviorSubject<Pagination>(defaultPagination);
+  pagination$ = this.pagination.asObservable();
+
+  predicate = {
+    startDate: new Date(),
+    isHost: false,
+    isGoing: false,
+  };
+
+  resetPagination() {
+    this.pagination.next(defaultPagination);
+  }
+
   getActivities() {
-    this.loadingService.startLoading('Loading Activities');
     const user = this.store.value.user;
 
-    return this.http.get<IActivity[]>(baseUrl + 'activities')
+    const {page, limit} = this.pagination.value;
+    const offset = limit * page;
+
+    const predicates = this.predicate;
+
+    let params = new HttpParams();
+    params = params.append('limit', limit.toString());
+    params = params.append('offset', offset.toString());
+
+    for (const [key, value] of Object.entries(predicates)) {
+      if (key === 'startDate') {
+        params = params.append(key, (value as Date).toISOString());
+      } else if (value) {
+        params = params.append(key, value.toString());
+      }
+    }
+
+    return this.http.get<{ activites: IActivity[], activityCount: number }>(baseUrl + 'activities', {params})
       .pipe(
         delay(1000),
+        tap(res => {
+          this.pagination.next(
+            {...this.pagination.value,
+              count: res.activityCount,
+              totalPages: Math.ceil(res.activityCount / this.pagination.value.limit)
+            });
+        }),
+        pluck('activites'),
         map(activites => activites.map(activity => this.setActivityProps(activity, user))),
         tap(activities => {
-          this.store.set('activities', activities);
-          this.loadingService.stopLoading();
+          this.store.set('activities', [...this.store.value.activities, ...activities]);
         }),
         catchError(err => {
-          this.loadingService.stopLoading();
           return throwError(err);
         })
-        );
+      );
+  }
+
+  resetActivites() {
+    this.activities = [];
+    this.resetPagination();
   }
 
   getActivityDetails(id: string) {
@@ -143,14 +201,14 @@ export class ActivityService {
 
       acc[date] = acc[date] ? [...acc[date], activity] : [activity];
       return acc;
-    }, {} as {[key: string]: IActivity[]}));
+    }, {} as { [key: string]: IActivity[] }));
   }
 
   setActivityProps(activity: IActivity, user: IUser) {
-      activity.date = new Date(activity.date);
-      activity.isGoing = activity.attendees.some(attendee => attendee.username === user.username);
-      activity.isHost = activity.attendees.some(attendee => attendee.username === user.username && attendee.isHost);
-      return activity;
+    activity.date = new Date(activity.date);
+    activity.isGoing = activity.attendees.some(attendee => attendee.username === user.username);
+    activity.isHost = activity.attendees.some(attendee => attendee.username === user.username && attendee.isHost);
+    return activity;
   }
 
 }

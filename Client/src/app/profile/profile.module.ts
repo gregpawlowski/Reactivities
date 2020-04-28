@@ -14,6 +14,7 @@ import { ProfileAboutComponent } from './profile-about/profile-about.component';
 import { ProfileEditFormComponent } from './profile-edit-form/profile-edit-form.component';
 import { ProfileFollowingsComponent } from './profile-followings/profile-followings.component';
 import { ProfileCardComponent } from './profile-card/profile-card.component';
+import { ProfileActivitiesComponent } from './profile-activities/profile-activities.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { ProfileCardComponent } from './profile-card/profile-card.component';
     ProfileAboutComponent,
     ProfileEditFormComponent,
     ProfileFollowingsComponent,
-    ProfileCardComponent
+    ProfileCardComponent,
+    ProfileActivitiesComponent
   ],
   imports: [
     NgxDropzoneModule,

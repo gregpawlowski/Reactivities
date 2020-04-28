@@ -1,0 +1,53 @@
+<div class="ui grid">
+  <div class="sixteen wide column">
+    <div class="ui header left floated"><i aria-hidden="true" class="calendar icon"></i>Activities</div>
+  </div>
+  <div class="sixteen wide column">
+    <sui-tabset>
+      <div class="ui pointing secondary menu">
+        <a class="item" suiTabHeader="future" (activate)="predicate = 'future'; loadUserActivites()">Future Events</a>
+        <a class="item" suiTabHeader="past" (activate)="predicate = 'past'; loadUserActivites()">Past Events</a>
+        <a class="item" suiTabHeader="hosting" (activate)="predicate = 'hosting'; loadUserActivites()">Hosting</a>
+      </div>
+      <div class="ui tab" [ngClass]="{loading: loading}" suiTabContent="future">
+        <div class="ui four cards" *ngIf="userActivites && predicate === 'future'">
+          <a class="ui card" *ngFor="let activity of userActivites" routerLink="/activities/{{activity.id}}">
+            <img class="ui image" src="../../../assets/categoryImages/{{activity.category.toLowerCase()}}.jpg">
+            <div class="content">
+              <div class="header" style="text-align: center">{{activity.title}}</div>
+              <div class="meta" style="text-align: center">
+                <div class="">{{activity.date}}</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="ui tab" suiTabContent="past">
+        <div class="ui four cards" *ngIf="userActivites && predicate === 'past'">
+          <a class="ui card" *ngFor="let activity of userActivites" routerLink="/activities/{{activity.id}}">
+            <img class="ui image" src="../../../assets/categoryImages/{{activity.category.toLowerCase()}}.jpg">
+            <div class="content">
+              <div class="header" style="text-align: center">{{activity.title}}</div>
+              <div class="meta" style="text-align: center">
+                <div class="">{{activity.date}}</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="ui tab" suiTabContent="hosting">
+        <div class="ui four cards" *ngIf="userActivites && predicate === 'hosting'">
+          <a class="ui card" *ngFor="let activity of userActivites" routerLink="/activities/{{activity.id}}">
+            <img class="ui image" src="../../../assets/categoryImages/{{activity.category.toLowerCase()}}.jpg">
+            <div class="content">
+              <div class="header" style="text-align: center">{{activity.title}}</div>
+              <div class="meta" style="text-align: center">
+                <div class="">{{activity.date}}</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </sui-tabset>
+  </div>
+</div>

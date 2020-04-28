@@ -13,6 +13,10 @@ import { ActivityDetailedInfoComponent } from './activity-detailed-info/activity
 import { ActivityDetailedChatComponent } from './activity-detailed-chat/activity-detailed-chat.component';
 import { ActivityDetailedSidebarComponent } from './activity-detailed-sidebar/activity-detailed-sidebar.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { ActivityFiltersComponent } from './activity-filters/activity-filters.component';
+import { MatDatepickerModule } from '@angular/material';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
 
 
 
@@ -27,12 +31,16 @@ import { NotFoundComponent } from './not-found/not-found.component';
     ActivityDetailedInfoComponent,
     ActivityDetailedChatComponent,
     ActivityDetailedSidebarComponent,
-    NotFoundComponent],
+    NotFoundComponent,
+    ActivityFiltersComponent],
   imports: [
     CommonModule,
     FormsModule,
     SharedModule,
-    ActivitiesRoutingModule
+    ActivitiesRoutingModule,
+    InfiniteScrollModule,
+    MatDatepickerModule,
+    MatMomentDateModule
   ],
   exports: []
 })

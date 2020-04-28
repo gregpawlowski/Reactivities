@@ -7,6 +7,7 @@ import { tap, finalize, catchError, delay } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
 import { UserService } from './user.service';
 import { ToastrService } from 'ngx-toastr';
+import { IUserActivity } from '../models/userActivity';
 
 const baseURL = environment.apiBaseUrl + 'api/';
 
@@ -159,5 +160,15 @@ export class ProfileService {
 
     return this.http.get<IProfile[]>(baseURL + 'profiles/' + username + '/follow', {params})
       .pipe(delay(1000));
+  }
+
+  getUserActivities(username, predicate) {
+    let params = new HttpParams();
+    params = params.append('predicate', predicate);
+
+    return this.http.get<IUserActivity[]>(baseURL + 'profiles/' + username + '/activities', {params})
+      .pipe(
+        delay(1000)
+      );
   }
 }

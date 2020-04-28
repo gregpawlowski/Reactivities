@@ -18,7 +18,7 @@ export interface State {
 }
 
 const state: State = {
-  activities: undefined,
+  activities: [],
   loading: false,
   activity: undefined,
   loaderContent: undefined,

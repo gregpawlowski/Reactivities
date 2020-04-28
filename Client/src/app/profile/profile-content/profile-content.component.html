@@ -3,7 +3,7 @@
     <div class="twelve wide column">
       <div class="ui segment bottom attached tab" [ngClass]="{loading: loading && aboutActive}" suiTabContent="1" style="min-height: 100%;"><app-profile-about *ngIf="aboutActive"></app-profile-about></div>
       <div class="ui segment bottom attached tab" [ngClass]="{loading: loading && photoActive}" suiTabContent="2" style="min-height: 100%;"><app-profile-photos *ngIf="photoActive"></app-profile-photos></div>
-      <div class="ui segment bottom attached tab" suiTabContent="3" style="min-height: 100%;">Activities Content</div>
+      <div class="ui segment bottom attached tab" [ngClass]="{loading: loading && photoActive}" suiTabContent="3" style="min-height: 100%;"><app-profile-activities *ngIf="activitiesActive"></app-profile-activities></div>
       <div class="ui segment bottom attached tab" [ngClass]="{loading: loading && followersActive}" suiTabContent="4" style="min-height: 100%;"><app-profile-followings type="followers" *ngIf="followersActive" (loading)="componentLoaded($event)"></app-profile-followings></div>
       <div class="ui segment bottom attached tab" [ngClass]="{loading: loading && followingsActive}" suiTabContent="5" style="min-height: 100%;"><app-profile-followings type="following" *ngIf="followingsActive" (loading)="componentLoaded($event)"></app-profile-followings></div>
     </div>
@@ -11,7 +11,7 @@
       <div class="ui vertical menu fluid">
           <a class="item" suiTabHeader="1" [(isActive)]="aboutActive" (activate)="loading = false">About</a>
           <a class="item" suiTabHeader="2" [(isActive)]="photoActive" (activate)="loading = false">Photos</a>
-          <a class="item" suiTabHeader="3">Activities</a>
+          <a class="item" suiTabHeader="3" [(isActive)]="activitiesActive" (activate)="loading = false">Activities</a>
           <a class="item" suiTabHeader="4" [(isActive)]="followersActive" (activate)="loading = true">Followers</a>
           <a class="item" suiTabHeader="5" [(isActive)]="followingsActive" (activate)="loading = true">Following</a>
       </div>

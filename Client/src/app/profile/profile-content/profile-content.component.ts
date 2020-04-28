@@ -11,6 +11,7 @@ export class ProfileContentComponent implements OnInit {
   photoActive: boolean;
   followingsActive: boolean;
   followersActive: boolean;
+  activitiesActive: boolean;
   loading = false;
 
   constructor(private route: ActivatedRoute) { }
