@@ -13,17 +13,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadingNext = false;
   subscriptions: Subscription[] = [];
   pagination: Pagination;
+  loadingActivities = this.loadingService.loadingActivities$;
 
   constructor(public activityService: ActivityService, private loadingService: LoadingService) { }
 
   ngOnInit() {
-    this.loadingService.startLoading('Loading Activities');
+    this.loadingService.startLoadingActivities();
     this.activityService.resetActivites();
     this.subscriptions.push(this.activityService.pagination$
       .subscribe((next) => this.pagination = next));
 
     this.activityService.getActivities()
-      .subscribe(() => this.loadingService.stopLoading(), () => this.loadingService.stopLoading());
+      .subscribe(() => this.loadingService.stopLoadingActivites(), () => this.loadingService.stopLoadingActivites());
   }
 
   handleNext() {

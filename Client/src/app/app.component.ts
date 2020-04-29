@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
   constructor(private userService: UserService, private loadingService: LoadingService, private router: Router) {}
 
   ngOnInit() {
-    this.loadingService.startLoading('Loading application');
+    this.loadingService.startLoading('Loading Application...');
 
     if (localStorage.getItem('jwt')) {
       this.userService.getCurrentUser()
@@ -28,7 +28,6 @@ export class AppComponent implements OnInit {
             this.appLoaded = true;
         }))
         .subscribe(undefined, (error) => {
-          console.log('Error loading the user', error);
           this.router.navigate(['']);
         });
     } else {

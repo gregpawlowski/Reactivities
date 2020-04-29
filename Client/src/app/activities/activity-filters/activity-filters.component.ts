@@ -10,17 +10,17 @@ import { LoadingService } from 'src/app/shared/services/loading.service';
 })
 export class ActivityFiltersComponent implements OnInit, OnDestroy {
   predicate = this.activityService.predicate;
-  
+
   constructor(private activityService: ActivityService, private loadingService: LoadingService) { }
 
   ngOnInit() {
   }
 
   dateChanged() {
-    this.loadingService.startLoading(`Getting Activities...`);
+    this.loadingService.startLoadingActivities();
     this.activityService.resetActivites();
     this.activityService.getActivities()
-      .subscribe(() => this.loadingService.stopLoading());
+      .subscribe(() => this.loadingService.stopLoadingActivites());
   }
 
   ngOnDestroy() {
@@ -29,7 +29,7 @@ export class ActivityFiltersComponent implements OnInit, OnDestroy {
   }
 
   predicateChange(predicate) {
-    this.loadingService.startLoading('Getting Activities...');
+    this.loadingService.startLoadingActivities();
     switch (predicate) {
       case 'all':
         this.predicate.isGoing = false;
@@ -47,6 +47,6 @@ export class ActivityFiltersComponent implements OnInit, OnDestroy {
 
     this.activityService.resetActivites();
     this.activityService.getActivities()
-      .subscribe(() => this.loadingService.stopLoading());
+      .subscribe(() => this.loadingService.stopLoadingActivites());
   }
 }

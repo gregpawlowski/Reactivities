@@ -15,6 +15,7 @@ export class ProfileActivitiesComponent implements OnInit {
   constructor(private profileService: ProfileService) { }
 
   ngOnInit() {
+    this.loadUserActivites();
   }
 
   loadUserActivites() {

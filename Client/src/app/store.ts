@@ -15,6 +15,7 @@ export interface State {
   activity: IActivity;
   user: IUser;
   profile: IProfile;
+  loadingActivities: boolean;
 }
 
 const state: State = {
@@ -23,7 +24,8 @@ const state: State = {
   activity: undefined,
   loaderContent: undefined,
   user: undefined,
-  profile: undefined
+  profile: undefined,
+  loadingActivities: undefined
 };
 
 @Injectable({

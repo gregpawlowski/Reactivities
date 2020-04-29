@@ -3,11 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { IProfile, IPhoto } from '../models/profile';
 import { Store } from '@store';
-import { tap, finalize, catchError, delay } from 'rxjs/operators';
+import { tap, finalize, catchError, delay, debounce } from 'rxjs/operators';
 import { LoadingService } from './loading.service';
 import { UserService } from './user.service';
 import { ToastrService } from 'ngx-toastr';
 import { IUserActivity } from '../models/userActivity';
+import { of } from 'rxjs';
 
 const baseURL = environment.apiBaseUrl + 'api/';
 

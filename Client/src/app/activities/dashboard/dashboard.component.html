@@ -6,7 +6,7 @@
       [infiniteScrollThrottle]="300"
       (scrolled)="handleNext()"
     >
-      <app-activity-list></app-activity-list>
+      <app-activity-list *ngIf="!(loadingActivities |async); else loading"></app-activity-list>
     </div>
     <!-- <button class="ui positive button right floated" (click)="handleNext()" [ngClass]="{loading: loadingNext}" [disabled]="pagination.totalPages === pagination.page + 1">Load More...</button> -->
 
@@ -18,3 +18,36 @@
       <div class="ui active text loader"></div>
   </div>
 </div>
+
+
+<ng-template #loading>
+  <div class="ui placeholder fluid" style="margin-top: 50px;">
+    <div class="ui segments">
+  
+      <div class="ui segment" style="min-height: 110px">
+        <div class="ui placeholder">
+          <div class="header image">
+            <div class="line"></div>
+            <div class="line"></div>
+          </div>
+          <div class="paragraph">
+            <div class="line"></div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="ui segment">
+        <div class="ui placeholder">
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </div>
+  
+      <div class="ui secondary segment" style="min-height: 50px;"></div>
+      <div class="ui clearing segment">
+        <button class="ui blue right floated button" disabled>View</button>
+      </div>
+  
+    </div>
+  </div>
+</ng-template>
