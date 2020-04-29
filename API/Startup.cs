@@ -59,7 +59,11 @@ namespace API
             {
                 opt.AddPolicy("CorsPolicy", policy => 
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200").AllowCredentials();
+                    policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins("http://localhost:4200")
+                    .AllowCredentials()
+                    .WithExposedHeaders("WWW-Authenticate");
                 });
             });
             
@@ -94,7 +98,9 @@ namespace API
                         IssuerSigningKey = key,
                         // Don't validate the URL for now
                         ValidateAudience = false,
-                        ValidateIssuer = false
+                        ValidateIssuer = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
                     };
 
                     // Add an Event for when a jwt Toekn is recieved

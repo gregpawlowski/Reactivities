@@ -22,7 +22,7 @@
           </a>
         </div>
       </div>
-      <div class="ui tab" [ngClass]="{loading: loading}" suiTabContent="past">
+      <div class="ui tab" suiTabContent="past">
         <div class="ui four cards" *ngIf="predicate === 'past'">
           <a class="ui card" *ngFor="let activity of userActivites" routerLink="/activities/{{activity.id}}">
             <img class="ui image" src="../../../assets/categoryImages/{{activity.category.toLowerCase()}}.jpg">
@@ -35,7 +35,7 @@
           </a>
         </div>
       </div>
-      <div class="ui tab" [ngClass]="{loading: loading}" suiTabContent="hosting">
+      <div class="ui tab" suiTabContent="hosting">
         <div class="ui four cards" *ngIf="predicate === 'hosting'">
           <a class="ui card" *ngFor="let activity of userActivites" routerLink="/activities/{{activity.id}}">
             <img class="ui image" src="../../../assets/categoryImages/{{activity.category.toLowerCase()}}.jpg">

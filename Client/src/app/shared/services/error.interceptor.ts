@@ -4,11 +4,12 @@ import { HttpErrorResponse, HTTP_INTERCEPTORS, HttpRequest, HttpEvent, HttpHandl
 import { throwError, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { UserService } from './user.service';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
 
-  constructor(private router: Router, private toastr: ToastrService) {}
+  constructor(private router: Router, private toastr: ToastrService, private userService: UserService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
@@ -19,6 +20,15 @@ export class ErrorInterceptor implements HttpInterceptor {
         if (error.status === 404 && req.method === 'GET') {
           this.router.navigate(['activities', 'notfound']);
           return throwError(error.error);
+        }
+        if (
+          error.status === 401
+          && error.headers.get('www-authenticate')
+          && error.headers.get('www-authenticate').startsWith('Bearer error="invalid_token", error_description="The token expired')
+        ) {
+          this.userService.logout();
+          this.router.navigate(['/']);
+          this.toastr.error('Your session has expired, please login');
         }
         if (error.status === 400 && req.method === 'GET' && error.error.errors.hasOwnProperty('id')) {
           this.router.navigate(['activities', 'notfound']);
